@@ -183,6 +183,81 @@ You're welcome! If you have any more questions or need further assistance, feel 
 
 ---
 
+_**User**_
+
+how to patch this package ? 
+
+"react-native-chessboard": "FirePlank/react-native-chessboard",
+
+---
+
+_**Assistant**_
+
+To patch a package like `react-native-chessboard` that is installed from a GitHub repository, you can use the `patch-package` library. This allows you to make modifications to the package and keep those changes even after reinstalling dependencies. Here’s how to do it:
+
+### Step 1: Install `patch-package`
+
+If you haven't already installed `patch-package`, you can do so by running:
+
+```bash
+yarn add patch-package
+```
+
+### Step 2: Modify the Package
+
+1. Navigate to the `node_modules/react-native-chessboard` directory.
+2. Make the necessary changes to the files in that directory.
+
+### Step 3: Create a Patch
+
+After making your changes, run the following command to create a patch file:
+
+```bash
+npx patch-package react-native-chessboard
+```
+
+This will create a patch file in the `patches` directory at the root of your project, named something like `react-native-chessboard+<version>.patch`.
+
+### Step 4: Update `package.json`
+
+Make sure to add a post-install script to your `package.json` to apply the patch automatically after installing dependencies. Add the following line to the `scripts` section:
+
+```json:package.json
+"scripts": {
+  // existing scripts...
+  "postinstall": "patch-package"
+}
+```
+
+### Summary of Steps
+
+1. Install `patch-package`.
+2. Modify the `react-native-chessboard` package in `node_modules`.
+3. Create a patch using `npx patch-package`.
+4. Add a post-install script to `package.json` to apply the patch automatically.
+
+### Example of Updated `package.json`
+
+Here’s how the relevant part of your `package.json` might look after adding the post-install script:
+
+```json:package.json
+{
+  "scripts": {
+    "android": "react-native run-android",
+    "ios": "react-native run-ios",
+    "lint": "eslint .",
+    "start": "react-native start",
+    "test": "jest",
+    "postinstall": "patch-package"
+  },
+  // ...
+}
+```
+
+Now, whenever you run `yarn install`, the patch will be applied automatically, ensuring your changes to `react-native-chessboard` are preserved.
+
+---
+
 
 
 ---
