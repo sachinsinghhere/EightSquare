@@ -1,52 +1,23 @@
-import React, {useEffect, useRef, useState} from 'react';
-import {View, StyleSheet, Dimensions, Button} from 'react-native';
+import React, {useEffect, useRef} from 'react';
+import {View, StyleSheet, Dimensions, Button, Image} from 'react-native';
 import Chessboard, {ChessboardRef} from 'react-native-chessboard';
+import {useTheme} from '../../../shared/theme/ThemeContext';
+import {themeChessboardImages} from '../../../shared/theme/theme';
 
 const {width} = Dimensions.get('window');
 const BOARD_SIZE = width - 32; // Full width minus padding
 
-export const ProfileScreen = () => {
-  const [fen, setFen] = useState(
-    'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
-  ); // Initial position
-
+export const PlayScreen: React.FC = () => {
   const chessboardRef = useRef<ChessboardRef>(null);
+  const {theme} = useTheme();
 
   const CHESSBOARD_STYLE = {
     Snow: {
-      black: '#62B1A8',
-      white: '#D9FDF8',
-      lastMoveHighlight: 'rgba(255,255,255, 0.5)',
-      checkmateHighlight: '#E84855',
-      promotionPieceButton: '#FF9B71',
-    },
-    Sand: {
-      black: '#C2B280',
-      white: '#F5F5DC',
-      lastMoveHighlight: 'rgba(210,180,140, 0.5)',
-      checkmateHighlight: '#E84855',
-      promotionPieceButton: '#FF9B71',
-    },
-    Wind: {
-      black: '#A8DADC',
-      white: '#F1FAEE',
-      lastMoveHighlight: 'rgba(233,236,239, 0.5)',
-      checkmateHighlight: '#E84855',
-      promotionPieceButton: '#FF9B71',
-    },
-    Casino: {
-      black: '#800020',
-      white: '#FFD700',
-      lastMoveHighlight: 'rgba(255,215,0, 0.5)',
-      checkmateHighlight: '#E84855',
-      promotionPieceButton: '#FF9B71',
-    },
-    Night: {
-      black: '#000033',
-      white: '#000080',
-      lastMoveHighlight: 'rgba(25,25,112, 0.5)',
-      checkmateHighlight: '#E84855',
-      promotionPieceButton: '#FF9B71',
+      black: theme.colors.primary,
+      white: theme.colors.secondary,
+      lastMoveHighlight: 'rgba(255,255,255, 0.2)',
+      checkmateHighlight: theme.colors.error,
+      promotionPieceButton: theme.colors.success,
     },
   };
 
@@ -58,7 +29,6 @@ export const ProfileScreen = () => {
       await chessboardRef.current?.move({from: 'a7', to: 'a6'});
       await chessboardRef.current?.move({from: 'f1', to: 'c4'});
       await chessboardRef.current?.move({from: 'a6', to: 'a5'});
-      // await chessboardRef.current?.move({from: 'f3', to: 'f7'});
     })();
   }, []);
 
@@ -67,12 +37,24 @@ export const ProfileScreen = () => {
       <Chessboard
         ref={chessboardRef}
         // fen={fen}
-        onMove={({state}) => {
+        onMove={({state}: {state: any}) => {
           console.log(state);
+        }}
+        renderPiece={(piece) => {
+          console.log('piece', piece);
+          return (
+            <Image
+              style={{
+                width: BOARD_SIZE / 8,
+                height: BOARD_SIZE / 8,
+              }}
+              source={themeChessboardImages[theme.name.toLowerCase()][piece]}
+            />
+          );
         }}
         colors={CHESSBOARD_STYLE.Snow}
         boardStyle={{
-          backgroundColor: 'red',
+          backgroundColor: theme.colors.background,
           width: BOARD_SIZE,
           height: BOARD_SIZE,
         }}
