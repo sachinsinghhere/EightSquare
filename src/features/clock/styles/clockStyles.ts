@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import { textStyles, combineStyles } from '../../../shared/theme/typography';
 
 export const clockStyles = StyleSheet.create({
   container: {
@@ -8,10 +9,20 @@ export const clockStyles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   title: {
-    fontSize: 24,
+    ...combineStyles(
+      textStyles.h3,
+      textStyles.getSecondaryStyle(textStyles.h3)
+    ),
+    textAlign: 'center',
     marginBottom: 20,
-    fontWeight: '600',
-    color: '#000000',
+  },
+  text: {
+    ...combineStyles(
+      textStyles.bodyMedium,
+      textStyles.getSecondaryStyle(textStyles.bodyMedium)
+    ),
+    textAlign: 'center',
+    marginBottom: 10,
   },
   button: {
     paddingHorizontal: 20,
@@ -19,7 +30,6 @@ export const clockStyles = StyleSheet.create({
     borderRadius: 8,
   },
   buttonText: {
-    fontSize: 16,
-    fontWeight: '500',
+    ...textStyles.button,
   },
 }); 

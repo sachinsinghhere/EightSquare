@@ -16,6 +16,7 @@ import Animated, {
   withSequence,
 } from 'react-native-reanimated';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import {textStyles, combineStyles} from '../../../shared/theme/typography';
 
 const {width} = Dimensions.get('window');
 
@@ -58,6 +59,33 @@ const timeControls: TimeControl[] = [
   },
 ];
 
+const TimeControlCard: React.FC<{
+  item: TimeControl;
+  index: number;
+  onPress: (item: TimeControl) => void;
+  scale: Animated.SharedValue<number>;
+}> = ({item, index, onPress, scale}) => {
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{scale: scale.value}],
+  }));
+
+  return (
+    <Animated.View
+      entering={FadeInUp.delay(index * 200)}
+      style={[styles.cardContainer, animatedStyle]}
+      key={item.name}>
+      <TouchableOpacity
+        style={styles.card}
+        onPress={() => onPress(item)}
+        activeOpacity={0.9}>
+        <Icon name={item.icon} size={32} color="#FFF" />
+        <Text style={styles.cardTitle}>{item.name}</Text>
+        <Text style={styles.cardDescription}>{item.description}</Text>
+      </TouchableOpacity>
+    </Animated.View>
+  );
+};
+
 const ChessClockSelection = () => {
   const navigation = useNavigation();
   const scale = useSharedValue(1);
@@ -70,37 +98,21 @@ const ChessClockSelection = () => {
     });
   };
 
-  const renderTimeControl = (item: TimeControl, index: number) => {
-    const animatedStyle = useAnimatedStyle(() => ({
-      transform: [{scale: scale.value}],
-    }));
-
-    return (
-      <Animated.View
-        entering={FadeInUp.delay(index * 200)}
-        style={[styles.cardContainer, animatedStyle]}
-        key={item.name}>
-        <TouchableOpacity
-          style={styles.card}
-          onPress={() => handleTimeControlPress(item)}
-          activeOpacity={0.9}>
-          <Icon name={item.icon} size={32} color="#FFF" />
-          <Text style={styles.cardTitle}>{item.name}</Text>
-          <Text style={styles.cardDescription}>{item.description}</Text>
-        </TouchableOpacity>
-      </Animated.View>
-    );
-  };
-
   return (
     <View style={styles.container}>
       <Animated.Text entering={FadeInDown.duration(800)} style={styles.title}>
         Select Time Control
       </Animated.Text>
       <View style={styles.cardsContainer}>
-        {timeControls.map((control, index) =>
-          renderTimeControl(control, index),
-        )}
+        {timeControls.map((control, index) => (
+          <TimeControlCard
+            key={control.name}
+            item={control}
+            index={index}
+            onPress={handleTimeControlPress}
+            scale={scale}
+          />
+        ))}
       </View>
     </View>
   );
@@ -114,8 +126,10 @@ const styles = StyleSheet.create({
     paddingTop: 40,
   },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
+    ...combineStyles(
+      textStyles.h1,
+      textStyles.getSecondaryStyle(textStyles.h1)
+    ),
     color: '#FFF',
     marginBottom: 30,
     textAlign: 'center',
@@ -143,13 +157,12 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   cardTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    ...textStyles.h3,
     color: '#FFF',
     marginTop: 12,
   },
   cardDescription: {
-    fontSize: 16,
+    ...textStyles.bodyMedium,
     color: '#AAA',
     marginTop: 8,
     textAlign: 'center',

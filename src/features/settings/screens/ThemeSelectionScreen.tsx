@@ -4,7 +4,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {brandThemes, Theme, themeImages} from '../../../shared/theme/theme';
 import {createStyleSheet, useStyles} from 'react-native-unistyles';
 import FourChessSquare from '../components/FourChessSquare';
-import { useTheme } from '../../../shared/theme/ThemeContext';
+import {useTheme} from '../../../shared/theme/ThemeContext';
+import {textStyles} from '../../../shared/theme/typography';
 
 interface ThemeSelectionScreenProps {
   navigation: {
@@ -75,22 +76,24 @@ const stylesheet = createStyleSheet({
   themeItemContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent:'space-between',
-    paddingHorizontal:10,
-    position:'absolute',
-    top:0,
-    left:0,
-    right:0,
-    height:'100%',
-    backgroundColor:'rgba(0,0,0,0.2)'
+    justifyContent: 'space-between',
+    paddingHorizontal: 10,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '100%',
+    backgroundColor: 'rgba(0,0,0,0.2)',
   },
   themeImage: {
     width: '100%',
     height: 100,
   },
   themeName: {
+    // ...textStyles.h4,
+    fontFamily: 'CormorantGaramond-Bold',
     fontWeight: '700',
-    fontSize: 22,
+    fontSize: 24,
   },
   chessSquareContainer: {
     alignItems: 'center',

@@ -1,7 +1,8 @@
 import React from 'react';
 import {Image, View} from 'react-native';
 import {createStyleSheet, useStyles} from 'react-native-unistyles';
-import { themeChessboardImages } from '../../../shared/theme/theme';
+import {themeChessboardImages} from '../../../shared/theme/theme';
+import {textStyles} from '../../../shared/theme/typography';
 
 const FourChessSquare = ({black, white, theme}: {black: string; white: string; theme: string}) => {
   const activeThemeChessboardImages = themeChessboardImages[theme];
@@ -44,15 +45,14 @@ const stylesheet = createStyleSheet({
     position: 'absolute',
     top: 0,
     left: 0,
-    fontWeight: '700',
-    fontSize: 22,
+    ...textStyles.h4,
     padding: 10,
   },
   chessSquareContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius:5,
-    overflow:'hidden',
+    borderRadius: 5,
+    overflow: 'hidden',
   },
   chessRow: {
     flexDirection: 'row',

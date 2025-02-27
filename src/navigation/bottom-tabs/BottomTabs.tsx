@@ -8,6 +8,7 @@ import SettingsScreen from '../../features/settings/screens/SettingsScreen';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import ChessClockSelection from '../../screens/ChessClockSelection';
 import ChessTimer from '../../screens/ChessTimer';
+import { textStyles } from '../../shared/theme/typography';
 
 const Tab = createBottomTabNavigator();
 
@@ -29,8 +30,16 @@ const BottomTabs = () => {
       <Tab.Navigator
         screenOptions={{
           headerShown: false,
-          tabBarStyle: {backgroundColor: theme.colors.card},
-          tabBarLabelStyle: {fontSize: 12, color: theme.colors.text},
+          tabBarStyle: {
+            backgroundColor: theme.colors.card,
+            borderTopColor: theme.colors.border,
+          },
+          tabBarLabelStyle: {
+            ...textStyles.caption,
+            color: theme.colors.text,
+          },
+          tabBarActiveTintColor: theme.colors.primary,
+          tabBarInactiveTintColor: theme.colors.text,
         }}>
         <Tab.Screen
           name="Play"
@@ -72,8 +81,6 @@ const BottomTabs = () => {
     </View>
   );
 };
-
-
 
 const TrainScreen = () => <View><Text>Train Screen</Text></View>;
 

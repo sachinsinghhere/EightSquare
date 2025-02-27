@@ -11,6 +11,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../shared/theme/ThemeContext';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import Slider from '@react-native-community/slider';
+import { textStyles, combineStyles } from '../shared/theme/typography';
 
 const { width } = Dimensions.get('window');
 
@@ -216,8 +217,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    ...combineStyles(
+      textStyles.h2,
+      textStyles.getSecondaryStyle(textStyles.h2)
+    ),
     textAlign: 'center',
     marginVertical: 20,
   },
@@ -231,15 +234,14 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   sectionEmoji: {
-    fontSize: 24,
+    ...textStyles.h3,
     marginRight: 8,
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
+    ...textStyles.h4,
   },
   sectionSubtitle: {
-    fontSize: 14,
+    ...textStyles.caption,
     marginLeft: 8,
     alignSelf: 'flex-end',
   },
@@ -249,21 +251,21 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   timeOption: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
     borderRadius: 8,
-    padding: 12,
     minWidth: (width - 48) / 3,
     alignItems: 'center',
   },
   timeOptionText: {
-    fontSize: 16,
-    fontWeight: '500',
+    ...textStyles.bodyMedium,
   },
   customSection: {
-    borderRadius: 12,
     padding: 16,
+    borderRadius: 12,
   },
   customLabel: {
-    fontSize: 16,
+    ...textStyles.bodyMedium,
     marginBottom: 8,
   },
   slider: {
@@ -273,29 +275,26 @@ const styles = StyleSheet.create({
   },
   unitSelector: {
     flexDirection: 'row',
-    marginBottom: 8,
-    gap: 8,
+    marginBottom: 16,
   },
   unitOption: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: 'transparent',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginRight: 8,
   },
   unitText: {
-    fontSize: 14,
-    fontWeight: '500',
+    ...textStyles.caption,
   },
   selectButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 24,
     borderRadius: 8,
-    padding: 12,
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: 16,
   },
   selectButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
+    ...textStyles.button,
   },
 });
 

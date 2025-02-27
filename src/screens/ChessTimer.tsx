@@ -18,6 +18,7 @@ import Animated, {
   FadeInDown,
 } from 'react-native-reanimated';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { textStyles, combineStyles } from '../shared/theme/typography';
 
 const { width } = Dimensions.get('window');
 
@@ -237,9 +238,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   time: {
-    fontSize: 64,
-    fontWeight: 'bold',
-    fontVariant: ['tabular-nums'],
+    ...combineStyles(
+      textStyles.h1,
+      textStyles.getSecondaryStyle(textStyles.h1),
+      { fontVariant: ['tabular-nums'] }
+    ),
   },
   controls: {
     position: 'absolute',
@@ -249,7 +252,7 @@ const styles = StyleSheet.create({
       { translateX: -25 },
       { translateY: -25 },
     ],
-    zIndex: 1,
+    zIndex: 10,
   },
   resetButton: {
     width: 50,
@@ -262,39 +265,29 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    zIndex: 2,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   gameOverCard: {
     padding: 24,
     borderRadius: 16,
     alignItems: 'center',
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    width: width * 0.8,
   },
   gameOverTitle: {
-    fontSize: 32,
-    fontWeight: 'bold',
+    ...textStyles.h2,
     marginBottom: 8,
   },
   gameOverSubtitle: {
-    fontSize: 20,
+    ...textStyles.h4,
     marginBottom: 24,
   },
   restartButton: {
-    paddingHorizontal: 24,
     paddingVertical: 12,
+    paddingHorizontal: 24,
     borderRadius: 8,
   },
   restartButtonText: {
-    fontSize: 18,
-    fontWeight: '600',
+    ...textStyles.button,
   },
 });
 

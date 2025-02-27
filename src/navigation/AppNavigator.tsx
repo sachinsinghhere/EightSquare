@@ -23,7 +23,11 @@ const AppNavigator = () => {
       <Stack.Navigator screenOptions={{headerShown: false}}>
         <Stack.Screen name="BottomTabs" component={BottomTabs} />
         <Stack.Screen name="ThemeSelection" component={ThemeSelectionScreen} />
-        <Stack.Screen name="ChessTimer" component={ChessTimer} />
+        <Stack.Screen
+          name="ChessTimer"
+          component={ChessTimer}
+          options={{animation: 'fade'}}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
