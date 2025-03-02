@@ -1,4 +1,90 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# EightSquare Chess App
+
+A modern chess application built with React Native, focusing on clean architecture and functional programming principles.
+
+## Project Structure
+
+```
+src/
+├── features/           # Feature-based modules
+│   ├── clock/         # Chess clock feature
+│   │   ├── screens/   # Screen components
+│   │   ├── hooks/     # Feature-specific hooks
+│   │   ├── types.ts   # Type definitions
+│   │   └── index.ts   # Feature barrel file
+│   └── ...
+├── shared/            # Shared utilities and components
+│   ├── components/    # Reusable UI components
+│   ├── hooks/         # Custom hooks
+│   ├── theme/         # Theme configuration
+│   ├── utils/         # Utility functions
+│   └── constants/     # Application constants
+├── navigation/        # Navigation configuration
+└── assets/           # Static assets
+```
+
+## Development Guidelines
+
+### Code Style
+
+- Use TypeScript for type safety
+- Follow functional programming principles
+- Keep components pure and focused
+- Use custom hooks for shared logic
+- Document complex logic with JSDoc comments
+
+### State Management
+
+- Use React Context for global state
+- Prefer local state when possible
+- Implement proper error boundaries
+- Use proper TypeScript types
+
+### Performance
+
+- Implement proper memoization (useMemo, useCallback)
+- Avoid unnecessary re-renders
+- Use proper list virtualization
+- Optimize images and assets
+
+### Testing
+
+- Write unit tests for utilities
+- Write integration tests for features
+- Use proper mocking
+- Follow TDD when applicable
+
+## Getting Started
+
+1. Install dependencies:
+```bash
+yarn install
+```
+
+2. Run the development server:
+```bash
+yarn start
+```
+
+3. Run the app:
+```bash
+# For iOS
+yarn ios
+
+# For Android
+yarn android
+```
+
+## Contributing
+
+1. Create a feature branch
+2. Make your changes
+3. Write/update tests
+4. Submit a pull request
+
+## License
+
+MIT
 
 # Getting Started
 
@@ -66,7 +152,7 @@ This is one way to run your app — you can also build it directly from Android 
 
 Now that you have successfully run the app, let's make changes!
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
 
 When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
 

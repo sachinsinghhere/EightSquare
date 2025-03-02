@@ -5,6 +5,7 @@ import {Chess} from 'chess.js';
 import {useTheme} from '../../../shared/theme/ThemeContext';
 import {themeChessboardImages} from '../../../shared/theme/theme';
 import {MoveHistory} from '../components/MoveHistory';
+import { ScreenWrapper } from '../../../shared/components/ScreenWrapper';
 
 const {width} = Dimensions.get('window');
 const BOARD_SIZE = width - 32; // Full width minus padding
@@ -111,33 +112,39 @@ export const PlayScreen: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={[styles.boardContainer, {backgroundColor: theme.colors.background}]}>
-        <Chessboard
-          ref={chessboardRef}
-          onMove={handleMove}
-          renderPiece={(piece) => (
-            <Image
-              style={{
-                width: BOARD_SIZE / 8,
-                height: BOARD_SIZE / 8,
-              }}
-              source={themeChessboardImages[theme.name.toLowerCase()][piece]}
-            />
-          )}
-          colors={CHESSBOARD_STYLE.Snow}
-          boardSize={BOARD_SIZE}
-        />
+    <ScreenWrapper title="Play" showBack={false}>
+      <View style={styles.container}>
+        <View
+          style={[
+            styles.boardContainer,
+            {backgroundColor: theme.colors.background},
+          ]}>
+          <Chessboard
+            ref={chessboardRef}
+            onMove={handleMove}
+            renderPiece={piece => (
+              <Image
+                style={{
+                  width: BOARD_SIZE / 8,
+                  height: BOARD_SIZE / 8,
+                }}
+                source={themeChessboardImages[theme.name.toLowerCase()][piece]}
+              />
+            )}
+            colors={CHESSBOARD_STYLE.Snow}
+            boardSize={BOARD_SIZE}
+          />
+        </View>
+
+        <View style={styles.moveHistoryContainer}>
+          <MoveHistory
+            moves={moves.map(m => m.formatted)}
+            currentMoveIndex={currentMoveIndex}
+            onMoveSelect={handleMoveSelect}
+          />
+        </View>
       </View>
-      
-      <View style={styles.moveHistoryContainer}>
-        <MoveHistory
-          moves={moves.map(m => m.formatted)}
-          currentMoveIndex={currentMoveIndex}
-          onMoveSelect={handleMoveSelect}
-        />
-      </View>
-    </View>
+    </ScreenWrapper>
   );
 };
 

@@ -1,11 +1,10 @@
-import React, {useEffect, useState} from 'react';
-import {View, Text, FlatList, TouchableOpacity, Image} from 'react-native';
+import React, {useEffect, useCallback} from 'react';
+import {View, FlatList, StyleSheet} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {brandThemes, Theme, themeImages} from '../../../shared/theme/theme';
-import {createStyleSheet, useStyles} from 'react-native-unistyles';
-import FourChessSquare from '../components/FourChessSquare';
+import {brandThemes, Theme} from '../../../shared/theme/theme';
 import {useTheme} from '../../../shared/theme/ThemeContext';
-import {textStyles} from '../../../shared/theme/typography';
+import ThemeItem from '../components/Theme';
+import { ScreenWrapper } from '../../../shared/components/ScreenWrapper';
 
 interface ThemeSelectionScreenProps {
   navigation: {
@@ -13,99 +12,102 @@ interface ThemeSelectionScreenProps {
   };
 }
 
+
+
 const ThemeSelectionScreen: React.FC<ThemeSelectionScreenProps> = ({
   navigation,
 }) => {
-  const {styles} = useStyles(stylesheet);
-  const [selectedTheme, setSelectedTheme] = useState(brandThemes.default.ocean);
   const themes = Object.values(brandThemes.default);
+  const {theme, setTheme} = useTheme();
 
   useEffect(() => {
     const loadTheme = async () => {
-      const storedTheme = await AsyncStorage.getItem('selectedTheme');
-      if (storedTheme) {
-        setSelectedTheme(JSON.parse(storedTheme));
+      try {
+        const storedTheme = await AsyncStorage.getItem('selectedTheme');
+        if (storedTheme) {
+          const parsedTheme = JSON.parse(storedTheme);
+          setTheme(parsedTheme);
+        }
+      } catch (error) {
+        console.error('Error loading theme:', error);
       }
     };
     loadTheme();
-  }, []);
-  const {setTheme} = useTheme();
+  }, [setTheme]);
 
-  const handleSelectTheme = async (theme: Theme) => {
-    setSelectedTheme(theme);
-    setTheme(theme);
-    await AsyncStorage.setItem('selectedTheme', JSON.stringify(theme));
-    navigation.goBack();
-  };
+  const handleSelectTheme = useCallback(async (selectedTheme: Theme) => {
+    try {
+      await AsyncStorage.setItem('selectedTheme', JSON.stringify(selectedTheme));
+      setTheme(selectedTheme);
+      navigation.goBack();
+    } catch (error) {
+      console.error('Error saving theme:', error);
+    }
+  }, [setTheme]);
+
+  const renderThemeItem = useCallback(({item, index}: {item: Theme; index: number}) => (
+    <ThemeItem
+      item={item}
+      index={index}
+      currentTheme={theme.name}
+      onSelect={handleSelectTheme}
+    />
+  ), [theme.name]);
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={themes}
-        showsVerticalScrollIndicator={false}
-        keyExtractor={(_, idx) => idx.toString()}
-        renderItem={({item}: {item: Theme}) => (
-          <TouchableOpacity onPress={() => handleSelectTheme(item)}>
-            <View>
-              <Image
-                source={themeImages[item.name.toLowerCase()]}
-                style={styles.themeImage}
-              />
-              <View style={styles.themeItemContainer}>
-              <Text style={[styles.themeName, {color: item.colors.text}]}>
-                {item.name || 'Ocean'}
-              </Text>
-              <FourChessSquare
-                theme={item.name.toLowerCase()}
-                black={item.colors.primary}
-                white={item.colors.secondary}
-              />
-              </View>
-            </View>
-          </TouchableOpacity>
-        )}
-      />
-    </View>
+    <ScreenWrapper title="Theme">
+      <View
+        style={[styles.container, {backgroundColor: theme.colors.background}]}>
+        <FlatList
+          data={themes}
+          showsVerticalScrollIndicator={false}
+          renderItem={renderThemeItem}
+          contentContainerStyle={styles.listContent}
+        />
+      </View>
+    </ScreenWrapper>
   );
 };
 
-const stylesheet = createStyleSheet({
+const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  listContent: {
+    padding: 16,
+  },
+  themeCard: {
+    marginBottom: 16,
+    borderRadius: 12,
+    overflow: 'hidden',
+    borderWidth: 1,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
   themeItemContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     position: 'absolute',
-    top: 0,
+    bottom: 0,
     left: 0,
     right: 0,
-    height: '100%',
-    backgroundColor: 'rgba(0,0,0,0.2)',
   },
   themeImage: {
     width: '100%',
-    height: 100,
+    height: 180,
   },
   themeName: {
-    // ...textStyles.h4,
     fontFamily: 'CormorantGaramond-Bold',
-    fontWeight: '700',
     fontSize: 24,
-  },
-  chessSquareContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  chessRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  chessSquare: {
-    width: 35,
-    height: 35,
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: {width: -1, height: 1},
+    textShadowRadius: 10,
   },
 });
 

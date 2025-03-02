@@ -1,9 +1,12 @@
+/**
+ * Main navigation container for the application
+ * Sets up the stack navigator and defines the main routes
+ */
 import React from 'react';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {NavigationContainer} from '@react-navigation/native';
 import BottomTabs from './bottom-tabs/BottomTabs';
-import ThemeSelectionScreen from '../features/settings/screens/ThemeSelectionScreen';
-import ChessTimer from '../screens/ChessTimer';
+import ChessTimer from '../features/clock/screens/ChessTimer';
 
 const Stack = createNativeStackNavigator();
 
@@ -22,7 +25,6 @@ const AppNavigator = () => {
       }}>
       <Stack.Navigator screenOptions={{headerShown: false}}>
         <Stack.Screen name="BottomTabs" component={BottomTabs} />
-        <Stack.Screen name="ThemeSelection" component={ThemeSelectionScreen} />
         <Stack.Screen
           name="ChessTimer"
           component={ChessTimer}

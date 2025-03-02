@@ -1,61 +1,42 @@
+/**
+ * Bottom tab navigation component
+ * Defines the main tabs for the application: Play, Train, Clock, and Settings
+ */
 import React from 'react';
+import { View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { View, Text } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
 import { PlayScreen } from '../../features/play/screens/PlayScreen';
 import { useTheme } from '../../shared/theme/ThemeContext';
-import SettingsScreen from '../../features/settings/screens/SettingsScreen';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import ChessClockSelection from '../../screens/ChessClockSelection';
-import ChessTimer from '../../screens/ChessTimer';
-import { textStyles } from '../../shared/theme/typography';
+import Icon from '../../shared/components/Icon';
+import { RootTabParamList } from '../types';
+import { getTabNavigatorOptions } from '../constants';
+import { ClockStack } from '../stacks/ClockStack';
+import { TrainStack } from '../stacks/TrainStack';
+import { SettingsStack } from '../stacks/SettingsStack';
 
-const Tab = createBottomTabNavigator();
+const Tab = createBottomTabNavigator<RootTabParamList>();
 
 const BottomTabs = () => {
   const { theme } = useTheme();
 
-  const ClockStack = () => {
-    const Stack = createNativeStackNavigator();
-    return (
-      <Stack.Navigator>
-        <Stack.Screen name="Clocks" component={ChessClockSelection} />
-        {/* <Stack.Screen name="ChessTimer" component={ChessTimer} /> */}
-      </Stack.Navigator>
-    );
-  };
-
   return (
     <View style={{flex: 1, backgroundColor: theme.colors.background}}>
-      <Tab.Navigator
-        screenOptions={{
-          headerShown: false,
-          tabBarStyle: {
-            backgroundColor: theme.colors.card,
-            borderTopColor: theme.colors.border,
-          },
-          tabBarLabelStyle: {
-            ...textStyles.caption,
-            color: theme.colors.text,
-          },
-          tabBarActiveTintColor: theme.colors.primary,
-          tabBarInactiveTintColor: theme.colors.text,
-        }}>
+      <Tab.Navigator screenOptions={getTabNavigatorOptions(theme)}>
         <Tab.Screen
           name="Play"
           component={PlayScreen}
           options={{
-            tabBarIcon: ({color}) => (
-              <Icon name="play" size={20} color={color} />
+            tabBarIcon: ({color, size}) => (
+              <Icon name="chess-king" size={size} color={color} />
             ),
           }}
         />
         <Tab.Screen
           name="Train"
-          component={TrainScreen}
+          component={TrainStack}
           options={{
-            tabBarIcon: ({color}) => (
-              <Icon name="school" size={20} color={color} />
+            tabBarIcon: ({color, size}) => (
+              <Icon name="sword" size={size} color={color} />
             ),
           }}
         />
@@ -63,17 +44,17 @@ const BottomTabs = () => {
           name="Clock"
           component={ClockStack}
           options={{
-            tabBarIcon: ({color}) => (
-              <Icon name="timer" size={20} color={color} />
+            tabBarIcon: ({color, size}) => (
+              <Icon name="timer" size={size} color={color} />
             ),
           }}
         />
         <Tab.Screen
           name="Settings"
-          component={SettingsScreen}
+          component={SettingsStack}
           options={{
-            tabBarIcon: ({color}) => (
-              <Icon name="settings" size={20} color={color} />
+            tabBarIcon: ({color, size}) => (
+              <Icon name="cog" size={size} color={color} />
             ),
           }}
         />
@@ -81,7 +62,5 @@ const BottomTabs = () => {
     </View>
   );
 };
-
-const TrainScreen = () => <View><Text>Train Screen</Text></View>;
 
 export default BottomTabs; 

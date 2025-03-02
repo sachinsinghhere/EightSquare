@@ -1,72 +1,70 @@
 import React from 'react';
-import {Image, View} from 'react-native';
-import {createStyleSheet, useStyles} from 'react-native-unistyles';
+import {View, Image, StyleSheet} from 'react-native';
 import {themeChessboardImages} from '../../../shared/theme/theme';
-import {textStyles} from '../../../shared/theme/typography';
 
-const FourChessSquare = ({black, white, theme}: {black: string; white: string; theme: string}) => {
-  const activeThemeChessboardImages = themeChessboardImages[theme];
-  const {styles} = useStyles(stylesheet);
+interface FourChessSquareProps {
+  black: string;
+  white: string;
+  theme: string;
+}
+
+const FourChessSquare: React.FC<FourChessSquareProps> = ({
+  black,
+  white,
+  theme,
+}) => {
   return (
-    <View style={styles.chessSquareContainer}>
+    <View style={styles.container}>
       <View style={styles.chessRow}>
         <View style={[styles.chessSquare, {backgroundColor: black}]}>
-          <Image style={styles.chessPiece} source={activeThemeChessboardImages.bb} />
+          <Image
+            source={themeChessboardImages[theme]?.blackRook}
+            style={styles.chessPiece}
+          />
         </View>
         <View style={[styles.chessSquare, {backgroundColor: white}]}>
-          <Image style={styles.chessPiece} source={activeThemeChessboardImages.wp} />
+          <Image
+            source={themeChessboardImages[theme]?.blackKnight}
+            style={styles.chessPiece}
+          />
         </View>
       </View>
       <View style={styles.chessRow}>
         <View style={[styles.chessSquare, {backgroundColor: white}]}>
-          <Image style={styles.chessPiece} source={activeThemeChessboardImages.wp} />
+          <Image
+            source={themeChessboardImages[theme]?.blackBishop}
+            style={styles.chessPiece}
+          />
         </View>
         <View style={[styles.chessSquare, {backgroundColor: black}]}>
-          <Image style={styles.chessPiece} source={activeThemeChessboardImages.bn} />
+          <Image
+            source={themeChessboardImages[theme]?.blackQueen}
+            style={styles.chessPiece}
+          />
         </View>
       </View>
     </View>
   );
 };
 
-const stylesheet = createStyleSheet({
+const styles = StyleSheet.create({
   container: {
-    flex: 1,
-  },
-  themeItemContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  themeImage: {
-    width: '100%',
-    height: 100,
-  },
-  themeName: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    ...textStyles.h4,
-    padding: 10,
-  },
-  chessSquareContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 5,
-    overflow: 'hidden',
   },
   chessRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   chessSquare: {
-    width: 35,
-    height: 35,
+    width: 20,
+    height: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },
   chessPiece: {
-    width: 25,
-    height: 25,
+    width: 15,
+    height: 15,
   },
 });
 

@@ -1,5 +1,7 @@
 /**
  * @format
+ * Application entry point
+ * Registers the main App component with React Native
  */
 
 import {AppRegistry} from 'react-native';
