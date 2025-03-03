@@ -12,7 +12,6 @@ import {Q} from '@nozbe/watermelondb';
 import withObservables from '@nozbe/with-observables';
 import {useTheme} from '../../../shared/theme/ThemeContext';
 import {textStyles} from '../../../shared/theme/typography';
-import CustomHeader from '../../../shared/components/CustomHeader';
 import Animated, {FadeInDown} from 'react-native-reanimated';
 import {useNavigation} from '@react-navigation/native';
 import {
@@ -20,13 +19,9 @@ import {
   syncPuzzlesToLocal,
   loadMorePuzzles,
 } from '../../../shared/services/database';
-
-interface Puzzle {
-  puzzleId: string;
-  rating: number;
-  themes: string;
-  themesList: string[];
-}
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { TrainStackParamList } from '../../../navigation/types';
+import Puzzle from '../../../shared/services/database/models/puzzle';
 
 interface PuzzleItemProps {
   puzzle: Puzzle;
@@ -165,7 +160,7 @@ const EnhancedPuzzleList = withObservables(
 
 const PuzzlesScreen = () => {
   const {theme} = useTheme();
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<TrainStackParamList>>();
   const [offset, setOffset] = useState<number>(1000);
   const [loading, setLoading] = useState<boolean>(false);
   const [initialLoad, setInitialLoad] = useState<boolean>(true);
@@ -204,8 +199,7 @@ const PuzzlesScreen = () => {
   };
 
   const handlePuzzlePress = (puzzle: Puzzle) => {
-    console.log('Puzzle selected:', puzzle.puzzleId);
-    // Navigate to puzzle detail/solver screen
+    navigation.navigate('PuzzleSolver', { puzzle });
   };
 
   const filters = [

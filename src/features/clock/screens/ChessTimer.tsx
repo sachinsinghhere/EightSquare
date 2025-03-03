@@ -20,6 +20,8 @@ import Animated, {
   withTiming,
   FadeInDown,
 } from 'react-native-reanimated';
+
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { textStyles, combineStyles } from '../../../shared/theme/typography';
 import { ScreenWrapper } from '../../../shared/components/ScreenWrapper';
 
@@ -179,7 +181,7 @@ const ChessTimer = () => {
             style={[styles.resetButton, { backgroundColor: theme.colors.primary }]}
             onPress={resetGame}
           >
-            <Text style={{fontSize: 20, color: theme.colors.background}}>🔄</Text>
+            <MaterialCommunityIcons name="refresh" size={24} color={theme.colors.background} />
           </TouchableOpacity>
         </View>
 

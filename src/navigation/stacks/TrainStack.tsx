@@ -5,7 +5,7 @@ import { useTheme } from '../../shared/theme/ThemeContext';
 import { getStackScreenOptions } from '../constants';
 import TrainingModules from '../../features/train/screens/TrainingModuleScreen';
 import PuzzleCategoriesScreen from '../../features/train/screens/PuzzleCategoriesScreen';
-import PuzzlesScreen from '../../features/train/screens/PuzzlesScreen';
+import PuzzleSolverScreen from '../../features/train/screens/PuzzleSolverScreen';
 import VisionTrainingScreen from '../../features/train/screens/VisionTrainingScreen';
 import BlindChessScreen from '../../features/train/screens/BlindChessScreen';
 import { ScreenWrapper } from '../../shared/components/ScreenWrapper';
@@ -24,9 +24,9 @@ const WrappedPuzzleCategories = () => (
   </ScreenWrapper>
 );
 
-const WrappedPuzzles = () => (
-  <ScreenWrapper title="Puzzles">
-    <PuzzlesScreen />
+const WrappedPuzzleSolver = () => (
+  <ScreenWrapper title="Solve Puzzles">
+    <PuzzleSolverScreen />
   </ScreenWrapper>
 );
 
@@ -56,8 +56,8 @@ export const TrainStack = () => {
         component={WrappedPuzzleCategories}
       />
       <Stack.Screen
-        name="Puzzles"
-        component={WrappedPuzzles}
+        name="PuzzleSolver"
+        component={WrappedPuzzleSolver}
       />
       <Stack.Screen
         name="VisionTraining"

@@ -1,0 +1,17 @@
+---
+description: Rule for the chess board and icons
+globs: 
+alwaysApply: false
+---
+
+
+Everything you follow related to chess board follow links below 
+
+https://github.com/enzomanuelmangano/react-native-chessboard (For the render of chess board in react-native-cli) [PlayScreen.tsx](mdc:src/features/play/screens/PlayScreen.tsx) has the decent implementation of it.
+
+https://github.com/jhlywa/chess.js/blob/master/README.md ( For performing any chess related logic use it's built in methods)
+
+Follow package.json before adding any dependency, if some linting issues can be ignored then ignore them. 
+
+Before implementing any thing check if it exists already, be it screen, component, utils, service, etc.
+

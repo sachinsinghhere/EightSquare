@@ -4,11 +4,10 @@ import {useTheme} from '../../../shared/theme/ThemeContext';
 import {useNavigation} from '@react-navigation/native';
 import {textStyles} from '../../../shared/theme/typography';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {TrainingStackParamList} from './TrainingModuleScreen';
-import CustomHeader from '../../../shared/components/CustomHeader';
+import {TrainStackParamList} from '../../../navigation/types';
 import Animated, {FadeInDown} from 'react-native-reanimated';
 
-type PuzzleCategoriesNavigationProp = NativeStackNavigationProp<TrainingStackParamList>;
+type PuzzleCategoriesNavigationProp = NativeStackNavigationProp<TrainStackParamList>;
 
 const categories = [
   {
@@ -42,7 +41,7 @@ const PuzzleCategoriesScreen = () => {
   const navigation = useNavigation<PuzzleCategoriesNavigationProp>();
 
   const handleCategorySelect = (filter: {type: string}) => {
-    navigation.navigate('Puzzles', {filter});
+    navigation.navigate('PuzzleSolver', {filter});
   };
 
   return (
