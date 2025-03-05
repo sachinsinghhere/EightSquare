@@ -5,7 +5,7 @@
 import React from 'react';
 import { View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { PlayScreen } from '../../features/play/screens/PlayScreen';
+// import { PlayScreen } from '../../features/play/screens/PlayScreen';
 import { useTheme } from '../../shared/theme/ThemeContext';
 import Icon from '../../shared/components/Icon';
 import { RootTabParamList } from '../types';
@@ -13,6 +13,7 @@ import { getTabNavigatorOptions } from '../constants';
 import { ClockStack } from '../stacks/ClockStack';
 import { TrainStack } from '../stacks/TrainStack';
 import { SettingsStack } from '../stacks/SettingsStack';
+import { PlayStack } from '../stacks/PlayStack';
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
 
@@ -24,7 +25,7 @@ const BottomTabs = () => {
       <Tab.Navigator screenOptions={getTabNavigatorOptions(theme)}>
         <Tab.Screen
           name="Play"
-          component={PlayScreen}
+          component={PlayStack}
           options={{
             tabBarIcon: ({color, size}) => (
               <Icon name="chess-king" size={size} color={color} />

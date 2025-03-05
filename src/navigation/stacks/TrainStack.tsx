@@ -8,6 +8,7 @@ import PuzzleCategoriesScreen from '../../features/train/screens/PuzzleCategorie
 import PuzzleSolverScreen from '../../features/train/screens/PuzzleSolverScreen';
 import VisionTrainingScreen from '../../features/train/screens/VisionTrainingScreen';
 import BlindChessScreen from '../../features/train/screens/BlindChessScreen';
+import ChessTitlesScreen from '../../features/train/screens/ChessTitles';
 import { ScreenWrapper } from '../../shared/components/ScreenWrapper';
 
 const Stack = createNativeStackNavigator<TrainStackParamList>();
@@ -42,6 +43,12 @@ const WrappedBlindChess = () => (
   </ScreenWrapper>
 );
 
+const WrappedChessTitles = () => (
+  <ScreenWrapper title="Chess Titles">
+    <ChessTitlesScreen />
+  </ScreenWrapper>
+);
+
 export const TrainStack = () => {
   const { theme } = useTheme();
   
@@ -66,6 +73,10 @@ export const TrainStack = () => {
       <Stack.Screen
         name="BlindChess"
         component={WrappedBlindChess}
+      />
+      <Stack.Screen
+        name="ChessTitles"
+        component={WrappedChessTitles}
       />
     </Stack.Navigator>
   );

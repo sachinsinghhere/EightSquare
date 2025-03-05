@@ -3,6 +3,7 @@ import { View, StyleSheet, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/ThemeContext';
 import { Header } from './Header';
+import Loader from './Loader';
 
 interface ScreenWrapperProps {
   children: React.ReactNode;
@@ -13,6 +14,7 @@ interface ScreenWrapperProps {
     icon: string;
     onPress: () => void;
   };
+  loaderVisible?: boolean;
 }
 
 export const ScreenWrapper: React.FC<ScreenWrapperProps> = ({
@@ -21,30 +23,28 @@ export const ScreenWrapper: React.FC<ScreenWrapperProps> = ({
   showHeader = true,
   showBack = true,
   rightAction,
+  loaderVisible = false,
 }) => {
   const { theme } = useTheme();
 
   return (
     <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.colors.background }]}
-      edges={['top', 'left', 'right']}
-    >
+      style={[styles.container, {backgroundColor: theme.colors.background}]}
+      edges={['top', 'left', 'right']}>
       <StatusBar
         barStyle={theme.name === 'Dark' ? 'light-content' : 'dark-content'}
         backgroundColor={theme.colors.background}
       />
-      
+
       {showHeader && title && (
-        <Header
-          title={title}
-          showBack={showBack}
-          rightAction={rightAction}
-        />
+        <Header title={title} showBack={showBack} rightAction={rightAction} />
       )}
 
-      <View style={[styles.content, { backgroundColor: theme.colors.background }]}>
+      <View
+        style={[styles.content, {backgroundColor: theme.colors.background}]}>
         {children}
       </View>
+      <Loader visible={loaderVisible} />
     </SafeAreaView>
   );
 };

@@ -13,6 +13,7 @@ export type TrainingStackParamList = {
   Puzzles: {filter: {type: string}};
   VisionTraining: undefined;
   BlindChess: undefined;
+  ChessTitles: undefined;
 };
 
 type TrainingNavigationProp = NativeStackNavigationProp<TrainingStackParamList>;
@@ -35,6 +36,12 @@ const trainingModules = [
     description: 'Practice playing chess without seeing the pieces',
     emoji: '🎯',
     screen: 'BlindChess' as const,
+  },
+  {
+    title: 'Chess Titles',
+    description: 'Learn about chess titles and their requirements',
+    emoji: '👑',
+    screen: 'ChessTitles' as const,
   },
 ] as const;
 

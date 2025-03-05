@@ -6,6 +6,7 @@ export type TrainStackParamList = {
   PuzzleSolver: { filter: { type: string } };
   VisionTraining: undefined;
   BlindChess: undefined;
+  ChessTitles: undefined;
 };
 
 export type SettingsStackParamList = {

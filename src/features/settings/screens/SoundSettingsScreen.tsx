@@ -49,7 +49,7 @@ const SoundSettingsScreen = () => {
           </View>
         ))}
 
-        <View style={[styles.volumeContainer, { backgroundColor: theme.colors.card }]}>
+        {/* <View style={[styles.volumeContainer, { backgroundColor: theme.colors.card }]}>
           <Text style={[styles.volumeTitle, { color: theme.colors.text, fontFamily: 'CormorantGaramond-Medium' }]}>
             Volume
           </Text>
@@ -67,7 +67,7 @@ const SoundSettingsScreen = () => {
           <Text style={[styles.volumeValue, { color: theme.colors.text, fontFamily: 'Roboto-Regular' }]}>
             {Math.round(volume * 100)}%
           </Text>
-        </View>
+        </View> */}
       </View>
     </ScreenWrapper>
   );
