@@ -4,62 +4,91 @@
  */
 import React from 'react';
 import { View } from 'react-native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-// import { PlayScreen } from '../../features/play/screens/PlayScreen';
+import { AnimatedTabBarNavigator } from 'react-native-animated-nav-tab-bar';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useTheme } from '../../shared/theme/ThemeContext';
-import Icon from '../../shared/components/Icon';
 import { RootTabParamList } from '../types';
-import { getTabNavigatorOptions } from '../constants';
+import { PlayStack } from '../stacks/PlayStack';
 import { ClockStack } from '../stacks/ClockStack';
 import { TrainStack } from '../stacks/TrainStack';
 import { SettingsStack } from '../stacks/SettingsStack';
-import { PlayStack } from '../stacks/PlayStack';
 
-const Tab = createBottomTabNavigator<RootTabParamList>();
+const Tabs = AnimatedTabBarNavigator<RootTabParamList>();
 
 const BottomTabs = () => {
   const { theme } = useTheme();
 
   return (
-    <View style={{flex: 1, backgroundColor: theme.colors.background}}>
-      <Tab.Navigator screenOptions={getTabNavigatorOptions(theme)}>
-        <Tab.Screen
+    <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
+      <Tabs.Navigator
+        appearance={{
+          floating: false,
+          tabBarBackground: theme.colors.card,
+          shadow: true,
+          dotSize: "small",
+          tabButtonLayout: "horizontal",
+          activeTabBackgrounds: theme.colors.primary,
+          horizontalPadding: 10,
+          tabBarHeight: 60,
+        }}
+        tabBarOptions={{
+          activeTintColor: theme.colors.background,
+          inactiveTintColor: theme.colors.text,
+          activeBackgroundColor: theme.colors.primary,
+          labelStyle: {
+            fontSize: 12,
+            fontFamily: 'Roboto-Medium',
+          },
+        }}
+        screenOptions={{
+          headerShown: false,
+        }}
+      >
+        <Tabs.Screen
           name="Play"
           component={PlayStack}
           options={{
-            tabBarIcon: ({color, size}) => (
-              <Icon name="chess-king" size={size} color={color} />
-            ),
+            tabBarIcon: ({ focused, color }) => {
+              return focused 
+                ? <Icon name="chess-queen" size={24} color={color} />
+                : <Icon name="chess-queen-outline" size={24} color={color} />;
+            },
           }}
         />
-        <Tab.Screen
+        <Tabs.Screen
           name="Train"
           component={TrainStack}
           options={{
-            tabBarIcon: ({color, size}) => (
-              <Icon name="sword" size={size} color={color} />
-            ),
+            tabBarIcon: ({ focused, color }) => {
+              return focused 
+                ? <Icon name="school" size={24} color={color} />
+                : <Icon name="school-outline" size={24} color={color} />;
+            },
           }}
         />
-        <Tab.Screen
+        <Tabs.Screen
           name="Clock"
           component={ClockStack}
           options={{
-            tabBarIcon: ({color, size}) => (
-              <Icon name="timer" size={size} color={color} />
-            ),
+            tabBarIcon: ({ focused, color }) => {
+              return focused 
+                ? <Icon name="timer" size={24} color={color} />
+                : <Icon name="timer-outline" size={24} color={color} />;
+            },
           }}
         />
-        <Tab.Screen
+        <Tabs.Screen
           name="Settings"
           component={SettingsStack}
           options={{
-            tabBarIcon: ({color, size}) => (
-              <Icon name="cog" size={size} color={color} />
-            ),
+            tabBarIcon: ({ focused, color }) => {
+              return focused 
+                ? <Icon name="cog" size={24} color={color} />
+                : <Icon name="cog-outline" size={24} color={color} />;
+            },
           }}
         />
-      </Tab.Navigator>
+      </Tabs.Navigator>
     </View>
   );
 };

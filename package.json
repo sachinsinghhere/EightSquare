@@ -11,9 +11,11 @@
     "postinstall": "patch-package"
   },
   "dependencies": {
+    "@notifee/react-native": "^9.1.8",
     "@nozbe/watermelondb": "^0.27.1",
     "@nozbe/with-observables": "^1.6.0",
     "@react-native-async-storage/async-storage": "^2.1.2",
+    "@react-native-community/datetimepicker": "^8.3.0",
     "@react-native-community/netinfo": "^11.4.1",
     "@react-native-community/slider": "^4.5.6",
     "@react-navigation/bottom-tabs": "^7.2.0",
@@ -26,6 +28,7 @@
     "patch-package": "^8.0.0",
     "react": "18.3.1",
     "react-native": "0.77.0",
+    "react-native-animated-nav-tab-bar": "^3.1.11",
     "react-native-chessboard": "FirePlank/react-native-chessboard",
     "react-native-flip-card": "^3.5.7",
     "react-native-gesture-handler": "^2.22.1",

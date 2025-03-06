@@ -18,6 +18,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import FlipCard from 'react-native-flip-card';
 import Icon from '../../../shared/components/Icon';
 import {textStyles, fonts} from '../../../shared/theme/typography';
+import { Avatars } from '../../../assets';
 
 export interface AIPersona {
   id: string;
@@ -57,7 +58,7 @@ const DIFFICULTY_LEVELS = [
         name: 'Casual Carl',
         rating: 800,
         level: 0,
-        image: require('../../../assets/images/themeBgs/clay.png'),
+        image: Avatars.avatar_one,
         description: 'Relaxed player who enjoys casual games',
         personality: {
           style: 'Casual and fun',
@@ -83,7 +84,7 @@ const DIFFICULTY_LEVELS = [
         name: 'Rookie Rachel',
         rating: 1000,
         level: 0,
-        image: require('../../../assets/images/themeBgs/clay.png'),
+        image: Avatars.avatar_two,
         description: 'Enthusiastic beginner with basic knowledge',
         personality: {
           style: 'Eager to learn',
@@ -109,7 +110,7 @@ const DIFFICULTY_LEVELS = [
         name: 'Patient Pat',
         rating: 1200,
         level: 0,
-        image: require('../../../assets/images/themeBgs/clay.png'),
+        image: Avatars.avatar_three,
         description: 'Methodical player focusing on fundamentals',
         personality: {
           style: 'Steady and careful',
@@ -142,7 +143,7 @@ const DIFFICULTY_LEVELS = [
         name: 'Tactical Tim',
         rating: 1500,
         level: 2,
-        image: require('../../../assets/images/themeBgs/clay.png'),
+        image: Avatars.avatar_four,
         description: 'Sharp player looking for combinations',
         personality: {
           style: 'Aggressive tactics',
@@ -168,7 +169,7 @@ const DIFFICULTY_LEVELS = [
         name: 'Positional Petra',
         rating: 1700,
         level: 2,
-        image: require('../../../assets/images/themeBgs/clay.png'),
+        image: Avatars.avatar_five,
         description: 'Strategic player who values piece placement',
         personality: {
           style: 'Strategic control',
@@ -194,7 +195,7 @@ const DIFFICULTY_LEVELS = [
         name: 'Dynamic Diana',
         rating: 1900,
         level: 2,
-        image: require('../../../assets/images/themeBgs/clay.png'),
+        image: Avatars.avatar_six,
         description: 'Active player who creates complications',
         personality: {
           style: 'Dynamic play',
@@ -227,7 +228,7 @@ const DIFFICULTY_LEVELS = [
         name: 'Strategic Steve',
         rating: 2100,
         level: 4,
-        image: require('../../../assets/images/themeBgs/clay.png'),
+        image: Avatars.avatar_seven,
         description: 'Deep strategic understanding and planning',
         personality: {
           style: 'Deep strategy',
@@ -253,7 +254,7 @@ const DIFFICULTY_LEVELS = [
         name: 'Attacking Alex',
         rating: 2300,
         level: 4,
-        image: require('../../../assets/images/themeBgs/clay.png'),
+        image: Avatars.avatar_eight,
         description: 'Aggressive player who loves sacrifices',
         personality: {
           style: 'Sharp attacks',
@@ -279,7 +280,7 @@ const DIFFICULTY_LEVELS = [
         name: 'Universal Uma',
         rating: 2500,
         level: 4,
-        image: require('../../../assets/images/themeBgs/clay.png'),
+        image: Avatars.avatar_nine,
         description: 'Complete player with universal style',
         personality: {
           style: 'Universal play',
@@ -318,7 +319,7 @@ export const AIPersonaScreen = () => {
   const {theme} = useTheme();
   const navigation = useNavigation<PlayScreenNavigationProp>();
   const {width} = useWindowDimensions();
-  const cardWidth = width * 0.42; // Reduced to 42% of screen width
+  const cardWidth = width * 0.42; // Reduced to 30% of screen width
 
   const handlePersonaSelect = useCallback((persona: AIPersona) => {
     navigation.navigate('Play', {selectedPersona: persona});
@@ -329,7 +330,7 @@ export const AIPersonaScreen = () => {
       <View style={{width: cardWidth, paddingRight: 8}}>
         <FlipCard
           style={styles.flipCard}
-          friction={20}
+          friction={25}
           perspective={2000}
           flipHorizontal={true}
           flipVertical={false}
@@ -349,44 +350,15 @@ export const AIPersonaScreen = () => {
               source={persona.image}
               style={styles.cardBackground}
               imageStyle={styles.cardBackgroundImage}>
-              <LinearGradient
-                colors={[
-                  theme.colors.surface + 'F2',
-                  theme.colors.surface + '00',
-                ]}
-                start={{x: 0.1, y: 0}}
-                end={{x: 0.9, y: 0.95}}
-                style={styles.cardGradient}>
-              </LinearGradient>
               <View style={styles.cardFooter}>
                 <LinearGradient
                   colors={[
-                    theme.colors.surface + '00',
-                    theme.colors.surface + 'F2',
+                    theme.colors.primary + '00',
+                    theme.colors.primary + 'F2',
                   ]}
                   start={{x: 0, y: 0}}
-                  end={{x: 0, y: 1}}
-                  style={styles.footerGradient}>
-                  <View style={styles.footerContent}>
-                    <Text
-                      style={[
-                        textStyles.h5,
-                        styles.personaName,
-                        {color: theme.colors.text},
-                      ]}>
-                      {persona.name}
-                    </Text>
-                    <View
-                      style={[
-                        styles.ratingBadge,
-                        {backgroundColor: theme.colors.primary},
-                      ]}>
-                      <Text style={[textStyles.caption, styles.ratingText]}>
-                        {persona.rating}
-                      </Text>
-                    </View>
-                  </View>
-                </LinearGradient>
+                  end={{x: 0, y: 1.5}}
+                  style={styles.footerGradient}/>
               </View>
             </ImageBackground>
           </View>
@@ -558,7 +530,7 @@ const styles = StyleSheet.create({
     height: 32,
   },
   cardFace: {
-    height: 180,
+    height: 200,
     width: '100%',
     borderRadius: 20,
     overflow: 'hidden',
@@ -568,7 +540,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   cardBack: {
-    height: 180,
+    height: 200,
     width: '100%',
     borderRadius: 20,
     padding: 12,
@@ -584,14 +556,7 @@ const styles = StyleSheet.create({
   },
   cardBackgroundImage: {
     borderRadius: 20,
-  },
-  cardGradient: {
-    flex: 1,
-    position:'absolute',
-    padding: 14,
-    justifyContent: 'flex-start',
-    borderRadius: 20,
-    overflow: 'hidden',
+    overflow:'hidden',
   },
   cardFooter: {
     position: 'absolute',
@@ -604,7 +569,7 @@ const styles = StyleSheet.create({
   },
   footerGradient: {
     width: '100%',
-    padding: 12,
+    height: 50,
   },
   footerContent: {
     flexDirection: 'row',
@@ -660,6 +625,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     overflow:'hidden',
-    borderRadius:20
+    borderRadius:20,
   },
 }); 

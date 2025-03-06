@@ -9,6 +9,7 @@ import {
   SafeAreaView,
   useWindowDimensions,
   Image,
+  ScrollView,
 } from 'react-native';
 import Chessboard, {ChessboardRef} from 'react-native-chessboard';
 import {Game} from 'js-chess-engine';
@@ -17,6 +18,8 @@ import {useTheme} from '../../../shared/theme/ThemeContext';
 import {themeChessboardImages} from '../../../shared/theme/theme';
 import {ScreenWrapper} from '../../../shared/components/ScreenWrapper';
 import type {AIPersona} from './AIPersonaScreen';
+import { useNetworkStatus } from '../../../shared/hooks/useNetworkStatus';
+import {generateCommentary} from '../services/commentaryService';
 
 interface ChessMoveInfo {
   move: Move;
@@ -41,6 +44,58 @@ interface PlayerStats {
   lastEvaluation: number;
 }
 
+// Define the difficulty levels type
+interface DifficultyLevel {
+  id: string;
+  name: string;
+  personas: AIPersona[];
+}
+
+// Import difficulty levels from a shared constant
+const DIFFICULTY_LEVELS: DifficultyLevel[] = [
+  {
+    id: 'beginner',
+    name: 'Beginner',
+    personas: [
+      // Default persona if needed
+      {
+        id: 'default',
+        name: 'Chess Buddy',
+        rating: 800,
+        level: 1,
+        image: null,
+        description: 'A friendly chess companion',
+        personality: {
+          style: 'Friendly',
+          strength: 'Teaching',
+          weakness: 'Basic tactics',
+        },
+        commentary: {
+          opening: ['Let\'s start this game! 🎮'],
+          middlegame: ['Interesting position! 🤔'],
+          endgame: ['The endgame approaches! ⚔️'],
+          winning: ['Well played! 🌟'],
+          losing: ['Good game! 👏'],
+          draw: ['A fair result! 🤝'],
+        },
+        prompts: {
+          moveAnalysis: '',
+          gameStrategy: '',
+          personalityTraits: '',
+        },
+      },
+    ],
+  },
+];
+
+interface RouteParams {
+  selectedPersona: AIPersona;
+}
+
+interface Route {
+  params?: RouteParams;
+}
+
 const ADAPTIVE_THRESHOLDS = {
   MOVES_TO_EVALUATE: 5,      // Minimum moves before adapting difficulty
   GOOD_MOVE_RATIO: 0.6,     // 60% good moves to increase difficulty
@@ -48,8 +103,15 @@ const ADAPTIVE_THRESHOLDS = {
   MIN_AVG_TIME: 5000,       // Minimum average move time (ms) for level increase
 };
 
-const ChessScreen = ({route}) => {
-  const {selectedPersona} = route.params || {};
+const ChessScreen = ({route}: {route: Route}) => {
+  const {isOnline, isOffline, connectionType} = useNetworkStatus();
+  console.log('isOnline, isOffline, connectionType', isOnline, isOffline, connectionType);
+  const [selectedPersona, setSelectedPersona] = useState<AIPersona>(() => {
+    if (!route.params?.selectedPersona) {
+      return DIFFICULTY_LEVELS[0].personas[0]; // Default to first beginner persona
+    }
+    return route.params.selectedPersona;
+  });
   const {theme} = useTheme();
   const [isThinking, setIsThinking] = useState(false);
   const [commentary, setCommentary] = useState('Select your opponent to begin!');
@@ -109,22 +171,27 @@ const ChessScreen = ({route}) => {
 
     const goodMoveRatio = playerStats.goodMoves / playerStats.totalMoves;
     const blunderRatio = playerStats.blunders / playerStats.totalMoves;
-    const currentLevel = selectedPersona.level;
+    const currentDifficultyIndex = DIFFICULTY_LEVELS.findIndex(
+      (level: DifficultyLevel) => level.personas.some((p: AIPersona) => p.id === selectedPersona.id)
+    );
 
     if (goodMoveRatio >= ADAPTIVE_THRESHOLDS.GOOD_MOVE_RATIO && 
         playerStats.avgMoveTime >= ADAPTIVE_THRESHOLDS.MIN_AVG_TIME &&
-        currentLevel < 4) {
+        currentDifficultyIndex < DIFFICULTY_LEVELS.length - 1) {
       // Player is doing well, increase difficulty
-      const newPersona = AI_PERSONAS[currentLevel + 1];
+      const nextLevel = DIFFICULTY_LEVELS[currentDifficultyIndex + 1];
+      const newPersona = nextLevel.personas[0];
       setSelectedPersona(newPersona);
       setCommentary(`Impressive! ${newPersona.name} would like to challenge you.`);
-    } else if (blunderRatio >= ADAPTIVE_THRESHOLDS.BLUNDER_RATIO && currentLevel > 0) {
+    } else if (blunderRatio >= ADAPTIVE_THRESHOLDS.BLUNDER_RATIO && 
+               currentDifficultyIndex > 0) {
       // Player is struggling, decrease difficulty
-      const newPersona = AI_PERSONAS[currentLevel - 1];
+      const previousLevel = DIFFICULTY_LEVELS[currentDifficultyIndex - 1];
+      const newPersona = previousLevel.personas[0];
       setSelectedPersona(newPersona);
       setCommentary(`${newPersona.name} steps in to continue the game.`);
     }
-  }, [playerStats, selectedPersona.level]);
+  }, [playerStats, selectedPersona.id]);
 
   // Helper function to count material value
   const countMaterial = (state: any) => {
@@ -147,33 +214,67 @@ const ChessScreen = ({route}) => {
     return total;
   };
 
-  // Generate AI commentary based on persona
-  const generateCommentary = useCallback(() => {
-    const comments = selectedPersona.commentary;
-    return comments[Math.floor(Math.random() * comments.length)];
-  }, [selectedPersona]);
+  // Determine game phase based on move count
+  const getGamePhase = useCallback(() => {
+    if (moves.length < 10) return 'opening';
+    if (moves.length > 30) return 'endgame';
+    return 'middlegame';
+  }, [moves.length]);
 
-  // Generate AI thinking message
-  const getThinkingMessage = useCallback(() => {
-    const messages = selectedPersona.thinking;
+  // Generate AI commentary based on persona and connectivity
+  const generateAICommentary = useCallback(async (playerMove: string | null = null, aiMove: string | null = null) => {
+    if (!isOnline || moves.length === 0) {
+      // Use static commentary for offline mode or initial state
+      const phase = getGamePhase();
+      const comments = selectedPersona.commentary[phase] || selectedPersona.commentary.middlegame;
+      const comment = comments[Math.floor(Math.random() * comments.length)];
+      return {
+        text: comment,
+        textWithoutEmoji: comment.replace(/[\u{1F600}-\u{1F6FF}]/gu, '').trim()
+      };
+    }
+
+    try {
+      const gameState = gameRef.current.exportJson();
+      const commentary = await generateCommentary(
+        selectedPersona,
+        JSON.stringify(gameState),
+        playerMove || `${moves[moves.length - 1].from}-${moves[moves.length - 1].to}`,
+        aiMove,
+        getGamePhase(),
+      );
+      return commentary;
+    } catch (error) {
+      console.error('Commentary generation error:', error);
+      // Fallback to static commentary on error
+      const phase = getGamePhase();
+      const comments = selectedPersona.commentary[phase] || selectedPersona.commentary.middlegame;
+      const comment = comments[Math.floor(Math.random() * comments.length)];
+      return {
+        text: comment,
+        textWithoutEmoji: comment.replace(/[\u{1F600}-\u{1F6FF}]/gu, '').trim()
+      };
+    }
+  }, [isOnline, moves, getGamePhase, selectedPersona]);
+
+  // Get commentary for game result
+  const getGameResultCommentary = useCallback((winner: 'white' | 'black' | 'draw', commentary: AIPersona['commentary']) => {
+    if (winner === 'draw') {
+      return commentary.draw[Math.floor(Math.random() * commentary.draw.length)];
+    }
+    const messages = winner === 'white' ? commentary.losing : commentary.winning;
     return messages[Math.floor(Math.random() * messages.length)];
-  }, [selectedPersona]);
+  }, []);
 
   // Handle game over
   const handleGameOver = useCallback((winner: 'white' | 'black' | 'draw') => {
     setIsGameOver(true);
-    let result;
-    if (winner === 'draw') {
-      result = 'Game ended in a draw!';
-    } else {
-      const messages = winner === 'white' ? selectedPersona.defeat : selectedPersona.victory;
-      result = messages[Math.floor(Math.random() * messages.length)];
-    }
+    const result = getGameResultCommentary(winner, selectedPersona.commentary);
     setCommentary(result);
 
     // Save game history or show analysis
     console.log('Game moves:', moves);
-  }, [moves, selectedPersona]);
+  }, [moves, getGameResultCommentary, selectedPersona.commentary]);
 
   // Handle resign
   const handleResign = useCallback(() => {
@@ -199,12 +300,10 @@ const ChessScreen = ({route}) => {
   // Handle AI move
   const handleAIMove = useCallback(async () => {
     try {
-      // Get AI's move
       const aiMoveResult = gameRef.current.aiMove(selectedPersona.level);
       const from = Object.keys(aiMoveResult)[0];
       const to = aiMoveResult[from];
 
-      // Record AI's move
       setMoves(prev => [...prev, {
         player: 'black',
         from,
@@ -212,7 +311,6 @@ const ChessScreen = ({route}) => {
         timestamp: Date.now(),
       }]);
 
-      // Update the board with AI's move
       if (chessboardRef.current) {
         await chessboardRef.current.move({
           from: from.toLowerCase() as Move['from'],
@@ -220,9 +318,14 @@ const ChessScreen = ({route}) => {
         });
       }
 
-      setCommentary(generateCommentary());
+      // Get the player's last move and AI's move
+      const playerLastMove = moves[moves.length - 1];
+      const commentary = await generateAICommentary(
+        `${playerLastMove.from}-${playerLastMove.to}`,
+        `${from}-${to}`,
+      );
+      setCommentary(commentary.text);
 
-      // Check for game over conditions after AI move
       const gameStatus = gameRef.current.exportJson();
       if (gameStatus.isFinished) {
         handleGameOver(gameStatus.checkMate ? 'black' : 'draw');
@@ -231,7 +334,7 @@ const ChessScreen = ({route}) => {
       console.error('AI move error:', error);
       setCommentary('Oops! Something went wrong with the AI move.');
     }
-  }, [handleGameOver, selectedPersona, generateCommentary]);
+  }, [handleGameOver, selectedPersona, generateAICommentary, moves]);
 
   // Handle player move
   const handleMove = useCallback(
@@ -261,12 +364,12 @@ const ChessScreen = ({route}) => {
         }
 
         setIsThinking(true);
-        // Use persona's thinking commentary
-        if (selectedPersona) {
-          const thinkingMessages = selectedPersona.commentary.middlegame;
-          const randomMessage = thinkingMessages[Math.floor(Math.random() * thinkingMessages.length)];
-          setCommentary(randomMessage);
-        }
+        // Comment on player's move immediately
+        const commentary = await generateAICommentary(
+          `${move.from}-${move.to}`,
+          null,
+        );
+        setCommentary(commentary.text);
         
         await new Promise(resolve => setTimeout(resolve, 1000));
         await handleAIMove();
@@ -277,13 +380,16 @@ const ChessScreen = ({route}) => {
         setIsThinking(false);
       }
     },
-    [handleAIMove, isThinking, isGameOver, handleGameOver, evaluateMove, adjustDifficulty, selectedPersona],
+    [handleAIMove, isThinking, isGameOver, handleGameOver, evaluateMove, adjustDifficulty, generateAICommentary],
   );
 
   return (
     <ScreenWrapper title={`You vs ${selectedPersona.name}`} showBack={true}>
-      <View
-        style={[styles.container, {backgroundColor: theme.colors.background}]}>
+      <ScrollView 
+        style={[styles.container, {backgroundColor: theme.colors.background}]}
+        contentContainerStyle={styles.contentContainer}
+        bounces={false}
+      >
         {selectedPersona && (
           <View
             style={[
@@ -315,7 +421,6 @@ const ChessScreen = ({route}) => {
             colors={{
               black: theme.colors.primary,
               white: theme.colors.secondary,
-              moving: 'rgba(255, 255, 255, 0.2)',
             }}
             renderPiece={piece => (
               <Image
@@ -353,7 +458,7 @@ const ChessScreen = ({route}) => {
             <View style={styles.thinkingContainer}>
               <ActivityIndicator size="small" color={theme.colors.primary} />
               <Text style={[styles.thinkingText, {color: theme.colors.text}]}>
-                {commentary}
+                Thinking...
               </Text>
             </View>
           )}
@@ -370,7 +475,7 @@ const ChessScreen = ({route}) => {
             <Text style={styles.resignButtonText}>Resign</Text>
           </TouchableOpacity>
         )}
-      </View>
+      </ScrollView>
     </ScreenWrapper>
   );
 };
@@ -378,7 +483,10 @@ const ChessScreen = ({route}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  contentContainer: {
     padding: 16,
+    paddingBottom: 32, // Extra padding at bottom for better scrolling
   },
   personaHeader: {
     flexDirection: 'row',
@@ -412,18 +520,23 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#1A1F2E',
   },
   infoContainer: {
     padding: 16,
-    backgroundColor: '#1A1F2E',
     borderRadius: 12,
     marginBottom: 20,
   },
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
   moveCount: {
     fontSize: 16,
-    color: '#8F9BB3',
-    marginBottom: 8,
+  },
+  statsText: {
+    fontSize: 16,
   },
   thinkingContainer: {
     flexDirection: 'row',
@@ -433,17 +546,15 @@ const styles = StyleSheet.create({
   thinkingText: {
     marginLeft: 10,
     fontSize: 16,
-    color: '#8F9BB3',
   },
   commentary: {
     fontSize: 16,
-    color: '#FFFFFF',
     textAlign: 'center',
+    marginTop: 8,
   },
   resignButton: {
     paddingHorizontal: 24,
     paddingVertical: 12,
-    backgroundColor: '#FF3D71',
     borderRadius: 8,
     opacity: 1,
   },
@@ -452,16 +563,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     textAlign: 'center',
-  },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  statsText: {
-    fontSize: 16,
-    color: '#8F9BB3',
   },
 });
 
