@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/ThemeContext';
 import { Header } from './Header';
 import Loader from './Loader';
+import { GalaxyBackground } from './GalaxyBackground';
 
 interface ScreenWrapperProps {
   children: React.ReactNode;
@@ -30,18 +31,21 @@ export const ScreenWrapper: React.FC<ScreenWrapperProps> = ({
   return (
     <SafeAreaView
       style={[styles.container, {backgroundColor: theme.colors.background}]}
-      edges={['top', 'left', 'right']}>
+      edges={['top', 'left', 'right']}
+      >
       <StatusBar
         barStyle={theme.name === 'Dark' ? 'light-content' : 'dark-content'}
         backgroundColor={theme.colors.background}
       />
+      
+      <GalaxyBackground />
 
       {showHeader && title && (
         <Header title={title} showBack={showBack} rightAction={rightAction} />
       )}
 
       <View
-        style={[styles.content, {backgroundColor: theme.colors.background}]}>
+        style={[styles.content, {backgroundColor: 'transparent'}]}>
         {children}
       </View>
       <Loader visible={loaderVisible} />

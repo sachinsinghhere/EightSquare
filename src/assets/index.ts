@@ -9,3 +9,9 @@ export const Avatars = {
   avatar_eight: require('./avatars/avatar_eight.jpeg'),
   avatar_nine: require('./avatars/avatar_nine.jpeg'),
 };
+
+export const AppImages = {
+  appLogo: require('./images/appLogoCircle.png'),
+  particles: require('./images/particles.jpg'),
+  infinity: require('./images/infinity.png'),
+};

@@ -1,55 +1,29 @@
 import React, {useRef, useState} from 'react';
 import {View, StyleSheet, Dimensions, Image} from 'react-native';
 import Chessboard, {ChessboardRef} from 'react-native-chessboard';
-import {Chess} from 'chess.js';
+import {Chess, Square} from 'chess.js';
 import {useTheme} from '../../../shared/theme/ThemeContext';
 import {themeChessboardImages} from '../../../shared/theme/theme';
 import {MoveHistory} from '../components/MoveHistory';
-import { ScreenWrapper } from '../../../shared/components/ScreenWrapper';
+import {ScreenWrapper} from '../../../shared/components/ScreenWrapper';
+import {playMoveSound} from '../../../utils/sound';
 
 const {width} = Dimensions.get('window');
 const BOARD_SIZE = width - 32; // Full width minus padding
 
 interface ChessMove {
   color: 'w' | 'b';
-  from: string;
-  to: string;
+  from: Square;
+  to: Square;
   flags: string;
   piece: string;
   san: string;
-}
-
-interface ChessState {
-  in_check: boolean;
-  in_checkmate: boolean;
-  in_draw: boolean;
-  in_stalemate: boolean;
-  in_threefold_repetition: boolean;
-  insufficient_material: boolean;
-  game_over: boolean;
-  fen: string;
-  in_promotion: boolean;
 }
 
 interface Move {
   raw: string;
   formatted: string;
 }
-
-const PIECE_SYMBOLS: Record<string, string> = {
-  k: '♔',
-  q: '♕',
-  r: '♖',
-  b: '♗',
-  n: '♘',
-  p: '♙',
-};
-
-const formatChessMove = (move: ChessMove): string => {
-  // Combine both notations for better UX
-  const pieceSymbol = move.piece !== 'p' ? PIECE_SYMBOLS[move.piece] : '';
-  return `${pieceSymbol}${move.san}`;
-};
 
 export const PlayScreen: React.FC = () => {
   const chessboardRef = useRef<ChessboardRef>(null);
@@ -69,12 +43,12 @@ export const PlayScreen: React.FC = () => {
     },
   };
 
-  const handleMove = (moveData: { move: ChessMove; state: ChessState }) => {
+  const handleMove = (moveData: { move: ChessMove; state: any }) => {
     if (isPrevMove) return;
     if (!moveData.move) return;
     
     const rawMove = `${moveData.move.from}-${moveData.move.to}`;
-    const formattedMove = formatChessMove(moveData.move);
+    const formattedMove = moveData.move.san;
     
     // Only add new moves if we're at the end of the move list
     if (currentMoveIndex === moves.length - 1 || currentMoveIndex === -1) {
@@ -91,6 +65,16 @@ export const PlayScreen: React.FC = () => {
         from: moveData.move.from,
         to: moveData.move.to,
       });
+
+      // Play sound based on move type
+      playMoveSound({
+        _from: moveData.move.from,
+        _to: moveData.move.to,
+        isCapture: moveData.move.flags.includes('c'),
+        isCheck: chessRef.current.in_check(),
+        isCastle: moveData.move.flags.includes('k') || moveData.move.flags.includes('q'),
+        isGameEnd: chessRef.current.game_over(),
+      });
     }
   };
 
@@ -102,7 +86,7 @@ export const PlayScreen: React.FC = () => {
     
     // Replay moves up to selected index
     for (let i = 0; i <= index; i++) {
-      const [from, to] = moves[i].raw.split('-');
+      const [from, to] = moves[i].raw.split('-') as [Square, Square];
       chessRef.current.move({from, to});
       await chessboardRef.current?.move({from, to});
     }

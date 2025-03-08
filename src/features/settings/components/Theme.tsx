@@ -29,7 +29,7 @@ const ThemeItem = memo(
       setIsCurrentTheme(currentTheme === item.name);
     }, [currentTheme, item.name]);
 
-    const containerBackgroundColor = `${item.colors.primary}80`
+    const containerBackgroundColor = `${item.colors.primary}70`
     // const containerBackgroundColor = isCurrentTheme 
     //   ? `${item.colors.primary}95`
     //   : 'rgba(0,0,0,0.2)';
@@ -37,6 +37,7 @@ const ThemeItem = memo(
     return (
       <View>
         <TouchableOpacity
+        activeOpacity={0.8}
           onPress={() => onSelect(item)}
           style={[
             styles.themeCard,
@@ -66,11 +67,11 @@ const ThemeItem = memo(
               {item.name}
             </Text>
             <View>
-              <FourChessSquare
+              {/* <FourChessSquare
                 theme={item.name.toLowerCase()}
                 black={item.colors.primary}
                 white={item.colors.secondary}
-              />
+              /> */}
             </View>
           </View>
         </TouchableOpacity>
@@ -90,7 +91,7 @@ const styles = StyleSheet.create({
   },
   themeCard: {
     marginBottom: 16,
-    borderRadius: 12,
+    borderRadius: 10,
     overflow: 'hidden',
     borderWidth: 1,
     elevation: 2,
@@ -104,7 +105,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 5,
     position: 'absolute',
     bottom: 0,
     left: 0,
@@ -112,7 +113,7 @@ const styles = StyleSheet.create({
   },
   themeImage: {
     width: '100%',
-    height: 180,
+    height: 130,
   },
   themeName: {
     fontFamily: 'CormorantGaramond-Bold',

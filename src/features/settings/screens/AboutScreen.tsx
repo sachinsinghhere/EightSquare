@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Image, ScrollView, Linking } from 'react-native
 import { ScreenWrapper } from '../../../shared/components/ScreenWrapper';
 import { useTheme } from '../../../shared/theme/ThemeContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { AppImages } from '../../../assets';
 
 const AboutScreen = () => {
   const { theme } = useTheme();
@@ -24,9 +25,10 @@ const AboutScreen = () => {
       <ScrollView style={styles.container}>
         <View style={styles.logoContainer}>
           <Image
-            source={require('../../../assets/images/themeBgs/bubblegum.png')}
+            source={AppImages.infinity}
             style={styles.logo}
             resizeMode="contain"
+            tintColor={theme.colors.primary}
           />
           <Text style={[styles.appName, { color: theme.colors.text, fontFamily: 'CormorantGaramond-Bold' }]}>
             EightSquare

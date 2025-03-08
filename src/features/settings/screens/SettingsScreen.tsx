@@ -50,12 +50,6 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
       screen: 'Notifications',
     },
     {
-      title: 'Language',
-      description: 'Change app language',
-      icon: 'translate',
-      screen: 'Language',
-    },
-    {
       title: 'About',
       description: 'App information and credits',
       icon: 'information',

@@ -6,6 +6,7 @@ import {textStyles} from '../../../shared/theme/typography';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {TrainStackParamList} from '../../../navigation/types';
 import Animated, {FadeInDown} from 'react-native-reanimated';
+import { ScreenWrapper } from '../../../shared/components/ScreenWrapper';
 
 type PuzzleCategoriesNavigationProp = NativeStackNavigationProp<TrainStackParamList>;
 
@@ -45,7 +46,9 @@ const PuzzleCategoriesScreen = () => {
   };
 
   return (
-    <View style={[styles.container, {backgroundColor: theme.colors.background}]}>
+  <ScreenWrapper title="Categories">
+
+    <View style={[styles.container]}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
           {categories.map((category, index) => (
@@ -85,6 +88,8 @@ const PuzzleCategoriesScreen = () => {
         </View>
       </ScrollView>
     </View>
+  </ScreenWrapper>
+
   );
 };
 

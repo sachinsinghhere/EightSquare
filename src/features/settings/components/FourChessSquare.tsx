@@ -57,8 +57,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   chessSquare: {
-    width: 20,
-    height: 20,
+    width: 18,
+    height: 18,
     alignItems: 'center',
     justifyContent: 'center',
   },

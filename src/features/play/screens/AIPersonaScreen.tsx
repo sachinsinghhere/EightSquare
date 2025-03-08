@@ -17,7 +17,7 @@ import {PlayStackParamList} from '../../../navigation/stacks/PlayStack';
 import LinearGradient from 'react-native-linear-gradient';
 import FlipCard from 'react-native-flip-card';
 import Icon from '../../../shared/components/Icon';
-import {textStyles, fonts} from '../../../shared/theme/typography';
+import {textStyles} from '../../../shared/theme/typography';
 import { Avatars } from '../../../assets';
 
 export interface AIPersona {
@@ -330,8 +330,8 @@ export const AIPersonaScreen = () => {
       <View style={{width: cardWidth, paddingRight: 8}}>
         <FlipCard
           style={styles.flipCard}
-          friction={25}
-          perspective={2000}
+          friction={10}
+          perspective={1500}
           flipHorizontal={true}
           flipVertical={false}
           clickable={true}
@@ -348,7 +348,10 @@ export const AIPersonaScreen = () => {
             ]}>
             <ImageBackground
               source={persona.image}
-              style={styles.cardBackground}
+              style={[
+                styles.cardBackground,
+                {backgroundColor: theme.colors.surfaceVariant},
+              ]}
               imageStyle={styles.cardBackgroundImage}>
               <View style={styles.cardFooter}>
                 <LinearGradient
@@ -358,7 +361,8 @@ export const AIPersonaScreen = () => {
                   ]}
                   start={{x: 0, y: 0}}
                   end={{x: 0, y: 1.5}}
-                  style={styles.footerGradient}/>
+                  style={styles.footerGradient}
+                />
               </View>
             </ImageBackground>
           </View>
@@ -479,9 +483,9 @@ export const AIPersonaScreen = () => {
   }));
 
   return (
-    <ScreenWrapper title="Play" showBack={false}>
+    <ScreenWrapper title="Play with AI" showBack>
       <SectionList
-        style={[styles.container, {backgroundColor: theme.colors.background}]}
+        style={[styles.container]}
         contentContainerStyle={styles.contentContainer}
         sections={sections}
         renderItem={renderItem}

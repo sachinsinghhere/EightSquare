@@ -9,7 +9,7 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [theme, setTheme] = useState<Theme>(brandThemes.default.ocean);
+  const [theme, setTheme] = useState<Theme>(brandThemes.default.cosmos);
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme }}>

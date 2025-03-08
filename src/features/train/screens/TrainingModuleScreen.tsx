@@ -6,6 +6,7 @@ import {textStyles} from '../../../shared/theme/typography';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import CustomHeader from '../../../shared/components/CustomHeader';
 import Animated, {FadeInDown} from 'react-native-reanimated';
+import { ScreenWrapper } from '../../../shared/components/ScreenWrapper';
 
 export type TrainingStackParamList = {
   TrainingModules: undefined;
@@ -50,46 +51,47 @@ const TrainingModules = () => {
   const navigation = useNavigation<TrainingNavigationProp>();
 
   return (
-    <View style={[styles.container, {backgroundColor: theme.colors.background}]}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        <View style={styles.content}>
-          {trainingModules.map((module, index) => (
-            <Animated.View
-              key={module.title}
-              entering={FadeInDown.delay(index * 100).springify()}>
-              <TouchableOpacity
-                style={[
-                  styles.moduleCard,
-                  {
-                    backgroundColor: theme.colors.card,
-                    borderColor: theme.colors.border,
-                  },
-                ]}
-                onPress={() => navigation.navigate(module.screen)}>
-                <Text style={styles.moduleEmoji}>{module.emoji}</Text>
-                <View style={styles.moduleInfo}>
-                  <Text
-                    style={[
-                      textStyles.h4,
-                      {color: theme.colors.text},
-                    ]}>
-                    {module.title}
-                  </Text>
-                  <Text
-                    style={[
-                      textStyles.bodyMedium,
-                      styles.moduleDescription,
-                      {color: theme.colors.text},
-                    ]}>
-                    {module.description}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            </Animated.View>
-          ))}
-        </View>
-      </ScrollView>
-    </View>
+    <ScreenWrapper title="Training" showBack={false}>
+      <View
+        style={[styles.container]}>
+        <ScrollView
+          style={styles.scrollView}
+          showsVerticalScrollIndicator={false}>
+          <View style={styles.content}>
+            {trainingModules.map((module, index) => (
+              <Animated.View
+                key={module.title}
+                entering={FadeInDown.delay(index * 100).springify()}>
+                <TouchableOpacity
+                  style={[
+                    styles.moduleCard,
+                    {
+                      backgroundColor: theme.colors.card,
+                      borderColor: theme.colors.border,
+                    },
+                  ]}
+                  onPress={() => navigation.navigate(module.screen)}>
+                  <Text style={styles.moduleEmoji}>{module.emoji}</Text>
+                  <View style={styles.moduleInfo}>
+                    <Text style={[textStyles.h4, {color: theme.colors.text}]}>
+                      {module.title}
+                    </Text>
+                    <Text
+                      style={[
+                        textStyles.bodyMedium,
+                        styles.moduleDescription,
+                        {color: theme.colors.text},
+                      ]}>
+                      {module.description}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              </Animated.View>
+            ))}
+          </View>
+        </ScrollView>
+      </View>
+    </ScreenWrapper>
   );
 };
 

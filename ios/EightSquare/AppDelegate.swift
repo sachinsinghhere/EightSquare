@@ -2,6 +2,7 @@ import UIKit
 import React
 import React_RCTAppDelegate
 import ReactAppDependencyProvider
+//import SplashScreen
 
 @main
 class AppDelegate: RCTAppDelegate {
@@ -12,6 +13,8 @@ class AppDelegate: RCTAppDelegate {
     // You can add your custom initial props in the dictionary below.
     // They will be passed down to the ViewController used by React Native.
     self.initialProps = [:]
+
+//    SplashScreen.show()
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }

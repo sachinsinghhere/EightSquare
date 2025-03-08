@@ -7,24 +7,25 @@ import {
   Dimensions,
   Share,
   Alert,
-  Image,
   ScrollView,
 } from 'react-native';
 import {useRoute, RouteProp} from '@react-navigation/native';
 import {Chess, Square} from 'chess.js';
-import Chessboard, {ChessboardRef} from 'react-native-chessboard';
+import {ChessboardRef} from 'react-native-chessboard';
 import {captureRef} from 'react-native-view-shot';
 import Icon from '../../../shared/components/Icon';
 import {useTheme} from '../../../shared/theme/ThemeContext';
 import {textStyles} from '../../../shared/theme/typography';
-import {themeChessboardImages} from '../../../shared/theme/theme';
 import {TrainStackParamList} from '../../../navigation/types';
 import {Q} from '@nozbe/watermelondb';
 import {database} from '../../../shared/services/database';
 import Puzzle from '../../../shared/services/database/models/puzzle';
+import {playMoveSound, playChessSound} from '../../../utils/sounds';
+import ESChessboard from '../../../shared/components/ESChessboard';
+import { ScreenWrapper } from '../../../shared/components/ScreenWrapper';
 
 const {width} = Dimensions.get('window');
-const BOARD_SIZE = width - 32;
+const BOARD_SIZE = width * 0.85;
 
 interface PuzzleRaw {
   id: string;
@@ -76,6 +77,7 @@ const PuzzleSolverScreen = () => {
                 .query(Q.where('themes', Q.like(`%${filter.type}%`)));
 
         const puzzleCollection = await query.fetch();
+        console.log('puzzleCollection', puzzleCollection);
         const randomPuzzles = puzzleCollection
           .sort(() => Math.random() - 0.5)
           .slice(0, 20) as unknown as Puzzle[];
@@ -163,12 +165,19 @@ const PuzzleSolverScreen = () => {
       const fromSquare = from as Square;
       const toSquare = to as Square;
       chessRef.current.move({from: fromSquare, to: toSquare});
+      
+      // Play appropriate sound based on move type
+      const isCapture = chessRef.current.get(toSquare) !== null;
+      const isCheck = chessRef.current.in_check();
+      playMoveSound(from, to, isCapture, isCheck, false);
+      
       setIsCorrectMove(true);
       setIsPlayerTurn(false);
 
       if (moveIndex === moves.length - 1) {
         // Puzzle completed
         setScore(s => s + 1);
+        playChessSound('gameEnd');
         setTimeout(() => {
           Alert.alert('Success!', 'Puzzle solved correctly!', [
             {text: 'Next Puzzle', onPress: moveToNextPuzzle},
@@ -185,6 +194,12 @@ const PuzzleSolverScreen = () => {
         setTimeout(() => {
           chessboardRef.current?.move({from: fromOpp, to: toOpp});
           chessRef.current.move({from: fromOpp, to: toOpp});
+          
+          // Play sound for opponent's move
+          const isCapture = chessRef.current.get(toOpp) !== null;
+          const isCheck = chessRef.current.in_check();
+          playMoveSound(fromOpp, toOpp, isCapture, isCheck, false);
+          
           setIsOpponentMoving(false);
           setIsPlayerTurn(true);
           setMoveIndex(moveIndex + 2);
@@ -193,6 +208,7 @@ const PuzzleSolverScreen = () => {
     } else {
       // Wrong move
       setIsCorrectMove(false);
+      playChessSound('move');  // Play a normal move sound for wrong moves
       setTimeout(() => {
         chessboardRef.current?.undo();
         setIsCorrectMove(null);
@@ -225,7 +241,7 @@ const PuzzleSolverScreen = () => {
   if (loading || !currentPuzzle) {
     return (
       <View
-        style={[styles.container, {backgroundColor: theme.colors.background}]}>
+        style={[styles.container]}>
         <Text style={[textStyles.h4, {color: theme.colors.text}]}>
           Loading puzzles...
         </Text>
@@ -247,9 +263,10 @@ const PuzzleSolverScreen = () => {
   });
 
   return (
-    <ScrollView
+  <ScreenWrapper title="Solve Puzzles">
 
-      contentContainerStyle={[styles.container, {backgroundColor: theme.colors.background}]}>
+    <ScrollView
+      contentContainerStyle={[styles.container]}>
       <Text
         style={[
           textStyles.h5,
@@ -268,24 +285,10 @@ const PuzzleSolverScreen = () => {
         ]}>
         You are playing as {playerColor === 'w' ? 'White' : 'Black'}
       </Text>
-      <View
-        style={[
-          styles.boardContainer,
-          {backgroundColor: theme.colors.background},
-        ]}>
-        <Chessboard
-          ref={chessboardRef}
+        <ESChessboard
+          boardRef={chessboardRef}
           fen={raw.fen}
           onMove={showSolution ? undefined : handleMove}
-          renderPiece={piece => (
-            <Image
-              style={{
-                width: BOARD_SIZE / 8,
-                height: BOARD_SIZE / 8,
-              }}
-              source={themeChessboardImages[theme.name.toLowerCase()][piece]}
-            />
-          )}
           colors={{
             black: theme.colors.primary,
             white: theme.colors.secondary,
@@ -301,7 +304,6 @@ const PuzzleSolverScreen = () => {
           boardSize={BOARD_SIZE}
           gestureEnabled={!showSolution}
         />
-      </View>
       <View style={styles.controls}>
         <View
           style={{
@@ -369,6 +371,7 @@ const PuzzleSolverScreen = () => {
         </View>}
       </View>
     </ScrollView>
+    </ScreenWrapper>
   );
 };
 

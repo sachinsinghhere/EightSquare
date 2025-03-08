@@ -1,11 +1,12 @@
-import React, {useEffect, useCallback} from 'react';
-import {View, FlatList, StyleSheet} from 'react-native';
+import React, {useEffect, useCallback, useRef} from 'react';
+import {View, FlatList, StyleSheet, useWindowDimensions, Image, ScrollView, Text} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {brandThemes, Theme} from '../../../shared/theme/theme';
+import {brandThemes, Theme, themeChessboardImages} from '../../../shared/theme/theme';
 import {useTheme} from '../../../shared/theme/ThemeContext';
 import ThemeItem from '../components/Theme';
 import { ScreenWrapper } from '../../../shared/components/ScreenWrapper';
-
+import Chessboard from 'react-native-chessboard';
+import FastImage from 'react-native-fast-image';
 interface ThemeSelectionScreenProps {
   navigation: {
     goBack: () => void;
@@ -19,6 +20,7 @@ const ThemeSelectionScreen: React.FC<ThemeSelectionScreenProps> = ({
 }) => {
   const themes = Object.values(brandThemes.default);
   const {theme, setTheme} = useTheme();
+   const scrollViewRef = useRef<ScrollView>(null);
 
   useEffect(() => {
     const loadTheme = async () => {
@@ -39,7 +41,8 @@ const ThemeSelectionScreen: React.FC<ThemeSelectionScreenProps> = ({
     try {
       await AsyncStorage.setItem('selectedTheme', JSON.stringify(selectedTheme));
       setTheme(selectedTheme);
-      navigation.goBack();
+      scrollViewRef.current?.scrollTo({ x: 0, y: 0, animated: true });
+      // navigation.goBack();
     } catch (error) {
       console.error('Error saving theme:', error);
     }
@@ -54,17 +57,45 @@ const ThemeSelectionScreen: React.FC<ThemeSelectionScreenProps> = ({
     />
   ), [theme.name]);
 
+  const {width, height} = useWindowDimensions();
+  const BOARD_SIZE = width * 0.60;
+
+
   return (
     <ScreenWrapper title="Theme">
-      <View
-        style={[styles.container, {backgroundColor: theme.colors.background}]}>
-        <FlatList
-          data={themes}
-          showsVerticalScrollIndicator={false}
-          renderItem={renderThemeItem}
-          contentContainerStyle={styles.listContent}
-        />
-      </View>
+      <ScrollView ref={scrollViewRef} showsVerticalScrollIndicator={false}>
+        <View pointerEvents="none" style={[styles.board, {height: BOARD_SIZE}]}>
+          <Chessboard
+            colors={{
+              black: theme.colors.primary,
+              white: theme.colors.secondary,
+            }}
+            renderPiece={piece => (
+              <FastImage
+                style={{
+                  width: BOARD_SIZE / 8,
+                  height: BOARD_SIZE / 8,
+                }}
+                source={themeChessboardImages?.[theme.name.toLowerCase()]?.[piece]}
+              />
+            )}
+            boardSize={BOARD_SIZE}
+          />
+        </View>
+
+        <View
+          style={[
+            styles.container
+          ]}>
+          <FlatList
+            scrollEnabled={false}
+            data={themes}
+            showsVerticalScrollIndicator={false}
+            renderItem={renderThemeItem}
+            contentContainerStyle={styles.listContent}
+          />
+        </View>
+      </ScrollView>
     </ScreenWrapper>
   );
 };
@@ -87,6 +118,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 2,
   },
+  board: {
+    alignSelf:'center',
+    borderRadius: 8,
+    overflow: 'hidden',
+    marginVertical: 16,
+  },
   themeItemContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -97,10 +134,6 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-  },
-  themeImage: {
-    width: '100%',
-    height: 180,
   },
   themeName: {
     fontFamily: 'CormorantGaramond-Bold',

@@ -15,8 +15,11 @@ import Animated, {
   useSharedValue,
   withSequence,
 } from 'react-native-reanimated';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {textStyles, combineStyles} from '../../../shared/theme/typography';
+import {useTheme} from '../../../shared/theme/ThemeContext';
+import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import type {PlayStackParamList} from '../../../navigation/stacks/PlayStack';
 
 const {width} = Dimensions.get('window');
 
@@ -59,12 +62,16 @@ const timeControls: TimeControl[] = [
   },
 ];
 
+type ChessClockNavigationProp = NativeStackNavigationProp<PlayStackParamList, 'ChooseTimer'>;
+
 const TimeControlCard: React.FC<{
   item: TimeControl;
   index: number;
   onPress: (item: TimeControl) => void;
   scale: Animated.SharedValue<number>;
-}> = ({item, index, onPress, scale}) => {
+  isSelected: boolean;
+}> = ({item, index, onPress, scale, isSelected}) => {
+  const {theme} = useTheme();
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{scale: scale.value}],
   }));
@@ -75,32 +82,58 @@ const TimeControlCard: React.FC<{
       style={[styles.cardContainer, animatedStyle]}
       key={item.name}>
       <TouchableOpacity
-        style={styles.card}
+        style={[
+          styles.card,
+          {
+            backgroundColor: isSelected ? theme.colors.primary : theme.colors.surface,
+          },
+        ]}
         onPress={() => onPress(item)}
         activeOpacity={0.9}>
-        <Icon name={item.icon} size={32} color="#FFF" />
-        <Text style={styles.cardTitle}>{item.name}</Text>
-        <Text style={styles.cardDescription}>{item.description}</Text>
+        <MaterialCommunityIcons
+          name={item.icon}
+          size={32}
+          color={isSelected ? theme.colors.background : theme.colors.text}
+        />
+        <Text
+          style={[
+            styles.cardTitle,
+            {color: isSelected ? theme.colors.background : theme.colors.text},
+          ]}>
+          {item.name}
+        </Text>
+        <Text
+          style={[
+            styles.cardDescription,
+            {color: isSelected ? theme.colors.background : theme.colors.secondary},
+          ]}>
+          {item.description}
+        </Text>
       </TouchableOpacity>
     </Animated.View>
   );
 };
 
 const ChessClockSelection = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<ChessClockNavigationProp>();
+  const {theme} = useTheme();
   const scale = useSharedValue(1);
+  const [selectedControl, setSelectedControl] = React.useState<TimeControl | null>(null);
 
   const handleTimeControlPress = (timeControl: TimeControl) => {
     scale.value = withSequence(withSpring(0.95), withSpring(1));
-    navigation.navigate('ChessTimer', {
+    setSelectedControl(timeControl);
+    navigation.navigate('Game', {
       minutes: timeControl.minutes,
       increment: timeControl.increment,
     });
   };
 
   return (
-    <View style={styles.container}>
-      <Animated.Text entering={FadeInDown.duration(800)} style={styles.title}>
+    <View style={[styles.container, {backgroundColor: theme.colors.background}]}>
+      <Animated.Text
+        entering={FadeInDown.duration(800)}
+        style={[styles.title, {color: theme.colors.text}]}>
         Select Time Control
       </Animated.Text>
       <View style={styles.cardsContainer}>
@@ -111,6 +144,7 @@ const ChessClockSelection = () => {
             index={index}
             onPress={handleTimeControlPress}
             scale={scale}
+            isSelected={selectedControl?.name === control.name}
           />
         ))}
       </View>
@@ -121,16 +155,11 @@ const ChessClockSelection = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
     paddingHorizontal: 20,
     paddingTop: 40,
   },
   title: {
-    ...combineStyles(
-      textStyles.h1,
-      textStyles.getSecondaryStyle(textStyles.h1)
-    ),
-    color: '#FFF',
+    ...combineStyles(textStyles.h1, textStyles.getSecondaryStyle(textStyles.h1)),
     marginBottom: 30,
     textAlign: 'center',
   },
@@ -143,7 +172,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   card: {
-    backgroundColor: '#2a2a2a',
     borderRadius: 16,
     padding: 24,
     alignItems: 'center',
@@ -158,12 +186,10 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     ...textStyles.h3,
-    color: '#FFF',
     marginTop: 12,
   },
   cardDescription: {
     ...textStyles.bodyMedium,
-    color: '#AAA',
     marginTop: 8,
     textAlign: 'center',
   },

@@ -6,20 +6,20 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   Alert,
-  SafeAreaView,
   useWindowDimensions,
   Image,
   ScrollView,
 } from 'react-native';
-import Chessboard, {ChessboardRef} from 'react-native-chessboard';
+import {ChessboardRef} from 'react-native-chessboard';
 import {Game} from 'js-chess-engine';
 import type {Move} from 'chess.js';
 import {useTheme} from '../../../shared/theme/ThemeContext';
-import {themeChessboardImages} from '../../../shared/theme/theme';
 import {ScreenWrapper} from '../../../shared/components/ScreenWrapper';
 import type {AIPersona} from './AIPersonaScreen';
 import { useNetworkStatus } from '../../../shared/hooks/useNetworkStatus';
 import {generateCommentary} from '../services/commentaryService';
+import {playMoveSound, playChessSound} from '../../../utils/sounds';
+import ESChessboard from '../../../shared/components/ESChessboard';
 
 interface ChessMoveInfo {
   move: Move;
@@ -348,6 +348,16 @@ const ChessScreen = ({route}: {route: Route}) => {
         gameRef.current.move(move.from.toUpperCase(), move.to.toUpperCase());
         const afterState = gameRef.current.exportJson();
         
+        // Play appropriate sound based on move type
+        const isCapture = afterState.pieces[move.to.toUpperCase()] !== undefined;
+        const isCheck = afterState.check;
+        const isCastle = move.from.toLowerCase() === 'e1' && move.to.toLowerCase() === 'g1' ||
+                        move.from.toLowerCase() === 'e1' && move.to.toLowerCase() === 'c1' ||
+                        move.from.toLowerCase() === 'e8' && move.to.toLowerCase() === 'g8' ||
+                        move.from.toLowerCase() === 'e8' && move.to.toLowerCase() === 'c8';
+        
+        playMoveSound(move.from, move.to, isCapture, isCheck, isCastle);
+        
         evaluateMove(beforeState, afterState);
         adjustDifficulty();
 
@@ -359,6 +369,7 @@ const ChessScreen = ({route}: {route: Route}) => {
         }]);
         
         if (afterState.isFinished) {
+          playChessSound('gameEnd');
           handleGameOver(afterState.checkMate ? 'white' : 'draw');
           return;
         }
@@ -413,27 +424,16 @@ const ChessScreen = ({route}: {route: Route}) => {
           </View>
         )}
 
-        <View style={[styles.board, {backgroundColor: theme.colors.surface}]}>
-          <Chessboard
-            ref={chessboardRef}
+          <ESChessboard
+            boardRef={chessboardRef}
             gestureEnabled={!isThinking && !isGameOver}
             onMove={handleMove}
             colors={{
               black: theme.colors.primary,
               white: theme.colors.secondary,
             }}
-            renderPiece={piece => (
-              <Image
-                style={{
-                  width: BOARD_SIZE / 8,
-                  height: BOARD_SIZE / 8,
-                }}
-                source={themeChessboardImages[theme.name.toLowerCase()][piece]}
-              />
-            )}
             boardSize={BOARD_SIZE}
           />
-        </View>
 
         <View
           style={[

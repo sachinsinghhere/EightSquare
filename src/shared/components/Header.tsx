@@ -18,7 +18,7 @@ export const Header: React.FC<HeaderProps> = ({ title, showBack = true, rightAct
   const navigation = useNavigation();
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <View style={[styles.container, { backgroundColor: 'transparent'}]}>
       <View style={styles.leftContainer}>
         {showBack && (
           <TouchableOpacity
@@ -52,8 +52,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.1)',
+    // borderBottomWidth: 1,
+    // borderBottomColor: 'rgba(0,0,0,0.1)',
   },
   leftContainer: {
     width: 40,
@@ -72,6 +72,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 20,
     textAlign: 'center',
-    fontFamily: 'CormorantGaramond-Bold',
+    fontFamily: 'CormorantGaramond-Regular',
+    fontWeight: '800'
   },
 }); 

@@ -7,6 +7,8 @@ export type TrainStackParamList = {
   VisionTraining: undefined;
   BlindChess: undefined;
   ChessTitles: undefined;
+  PieceMovement: undefined;
+  SquareRecognition: undefined;
 };
 
 export type SettingsStackParamList = {

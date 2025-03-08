@@ -22,49 +22,65 @@ export interface Theme {
   colors: ThemeColors;
 }
 
-export type ThemeVariant =
-  | 'ocean'
-  | 'bubblegum'
-  | 'clay'
-  | 'neon'
-  | 'romantic'
-  | 'tournament'
-  | 'wood'
-  | 'winter';
+export type ThemeVariant = 'earth' | 'jupiter' | 'mars' | 'neptune' | 'saturn' | 'uranus' | 'venus' | 'mercury' | 'cosmos';
 
 export interface BrandTheme {
-  ocean: Theme;
-  bubblegum: Theme;
-  clay: Theme;
-  neon: Theme;
-  romantic: Theme;
-  tournament: Theme;
-  wood: Theme;
-  winter: Theme;
+  earth: Theme;
+  jupiter: Theme;
+  mars: Theme;
+  neptune: Theme;
+  saturn: Theme;
+  uranus: Theme;
+  venus: Theme;
+  mercury: Theme;
+  cosmos: Theme;
 }
 
-export const oceanTheme: Theme = {
-  name: 'Ocean',
-  dark: false,
+export const cosmosTheme: Theme = {
+  name: 'cosmos',
+  dark: true,
   colors: {
-    primary: '#29ABE2', // A calming blue
-    secondary: '#72DDF7', // A lighter blue
-    background: '#E0F7FA', // Very light cyan
-    card: '#FFFFFF',
-    text: '#37474F', // Dark grayish blue
-    border: '#B0BEC5',
-    notification: '#EF5350',
-    error: '#EF5350',
-    success: '#66BB6A',
-    warning: '#FFA726',
-    surface: '#FFFFFF',
-    surfaceVariant: '#E1F5FE', // Even lighter cyan
-    onSurface: '#37474F',
+    primary: '#0D0F1F', // Deep navy-black, rich & immersive
+    secondary: '#1B1E36', // Muted twilight blue for depth
+    background: '#090B10', // Almost black, but soft
+    card: '#141826', // Soft, dark blue-gray for elevated surfaces
+    text: '#D1D5E4', // Misty white-blue, crisp but not harsh
+    border: '#262A40', // Slightly lighter than card for gentle contrast
+    notification: '#FF6B81', // Soft neon red-pink (not overpowering)
+    error: '#F05454', // Vivid coral-red for errors
+    success: '#4ADE80', // Soft but lively green
+    warning: '#E9A23B', // Warm golden amber for alerts
+    surface: '#171A2F', // Slightly raised background for panels
+    surfaceVariant: '#22253F', // A step lighter for contrast
+    onSurface: '#E3E6F3', // Smooth off-white for legibility
+  },
+};
+export const marsTheme: Theme = {
+  name: 'mars',
+  dark: true,
+  colors: {
+    primary: '#0D0F1F', // Deep navy-black, rich & immersive
+    secondary: '#1B1E36', // Muted twilight blue for depth
+    background: '#090B10', // Almost black, but soft
+    card: '#141826', // Soft, dark blue-gray for elevated surfaces
+    text: '#D1D5E4', // Misty white-blue, crisp but not harsh
+    border: '#262A40', // Slightly lighter than card for gentle contrast
+    notification: '#FF6B81', // Soft neon red-pink (not overpowering)
+    error: '#F05454', // Vivid coral-red for errors
+    success: '#4ADE80', // Soft but lively green
+    warning: '#E9A23B', // Warm golden amber for alerts
+    surface: '#171A2F', // Slightly raised background for panels
+    surfaceVariant: '#22253F', // A step lighter for contrast
+    onSurface: '#E3E6F3', // Smooth off-white for legibility
   },
 };
 
-export const bubblegumTheme: Theme = {
-  name: 'Bubblegum',
+
+
+
+
+export const mercuryTheme: Theme = {
+  name: 'mercury',
   dark: false,
   colors: {
     primary: '#E91E63', // Pink
@@ -83,8 +99,8 @@ export const bubblegumTheme: Theme = {
   },
 };
 
-export const clayTheme: Theme = {
-  name: 'Clay',
+export const neptuneTheme: Theme = {
+  name: 'neptune',
   dark: true,
   colors: {
     primary: '#A1887F', // A muted brown
@@ -103,8 +119,8 @@ export const clayTheme: Theme = {
   },
 };
 
-export const neonTheme: Theme = {
-  name: 'Neon',
+export const earthTheme: Theme = {
+  name: 'earth',
   dark: true,
   colors: {
     primary: '#64DD17', // Bright green
@@ -123,8 +139,8 @@ export const neonTheme: Theme = {
   },
 };
 
-export const romanticTheme: Theme = {
-  name: 'Romantic',
+export const uranusTheme: Theme = {
+  name: 'uranus',
   dark: false,
   colors: {
     primary: '#F06292', // Rose
@@ -145,8 +161,9 @@ export const romanticTheme: Theme = {
 
 // For tournament and wood themes, I'll provide chessboard-optimized colors
 
-export const tournamentTheme: Theme = {
-  name: 'Tournament',
+export const jupiterTheme: Theme = {
+  // Jupiter with pieces
+  name: 'jupiter',
   dark: false,
   colors: {
     primary: '#C68C53', // Light square - A light, natural wood color
@@ -165,8 +182,8 @@ export const tournamentTheme: Theme = {
   },
 };
 
-export const woodTheme: Theme = {
-  name: 'Wood',
+export const saturnTheme: Theme = { // saturn
+  name: 'saturn',
   dark: false,
   colors: {
     primary: '#E0C2A3', // Light square - A lighter, more refined wood color
@@ -185,8 +202,8 @@ export const woodTheme: Theme = {
   },
 };
 
-export const winterTheme: Theme = {
-  name: 'Winter',
+export const venusTheme: Theme = {
+  name: 'venus',
   dark: true,
   colors: {
     primary: '#B3E5FC', // Light blue
@@ -207,141 +224,159 @@ export const winterTheme: Theme = {
 
 export const brandThemes: Record<string, BrandTheme> = {
   default: {
-    ocean: oceanTheme,
-    bubblegum: bubblegumTheme,
-    clay: clayTheme,
-    neon: neonTheme,
-    romantic: romanticTheme,
-    tournament: tournamentTheme,
-    wood: woodTheme,
-    winter: winterTheme,
+    cosmos: cosmosTheme,
+    mercury: mercuryTheme,
+    venus: venusTheme,
+    earth: earthTheme,
+    mars: marsTheme,
+    jupiter: jupiterTheme,
+    saturn: saturnTheme,
+    uranus: uranusTheme,
+    neptune: neptuneTheme,
   },
 };
+
 // Theme images mapping
 export const themeImages: Record<string, ImageSourcePropType> = {
-  ocean: require('../../assets/images/themeBgs/ocean.png'),
-  bubblegum: require('../../assets/images/themeBgs/bubblegum.png'),
-  clay: require('../../assets/images/themeBgs/clay.png'),
-  neon: require('../../assets/images/themeBgs/neon.png'),
-  romantic: require('../../assets/images/themeBgs/romantic.png'),
-  tournament: require('../../assets/images/themeBgs/tournament.png'),
-  wood: require('../../assets/images/themeBgs/wood.png'),
-  winter: require('../../assets/images/themeBgs/winter.png'),
+  earth: require('../../assets/images/planets/earth.jpeg'),
+  jupiter: require('../../assets/images/planets/jupiter.jpeg'),
+  mars: require('../../assets/images/planets/mars.jpeg'),
+  neptune: require('../../assets/images/planets/neptune.jpeg'),
+  saturn: require('../../assets/images/planets/saturn.jpeg'),
+  uranus: require('../../assets/images/planets/uranus.jpeg'),
+  venus: require('../../assets/images/planets/venus.jpeg'),
+  mercury: require('../../assets/images/planets/mercury.jpeg'),
+  cosmos: require('../../assets/images/planets/cosmos.jpeg'),
 };
 
-// Theme chessboard images mapping
-export const themeChessboardImages: Record<string, Record<string, ImageSourcePropType>> = {
-  ocean: {
-    bb: require('../../assets/pieces/Ocean/bb.png'),
-    bn: require('../../assets/pieces/Ocean/bn.png'),
-    bq: require('../../assets/pieces/Ocean/bq.png'),
-    br: require('../../assets/pieces/Ocean/br.png'),
-    bp: require('../../assets/pieces/Ocean/bp.png'),
-    bk: require('../../assets/pieces/Ocean/bk.png'),
-    wb: require('../../assets/pieces/Ocean/wb.png'),
-    wn: require('../../assets/pieces/Ocean/wn.png'),
-    wq: require('../../assets/pieces/Ocean/wq.png'),
-    wr: require('../../assets/pieces/Ocean/wr.png'),
-    wp: require('../../assets/pieces/Ocean/wp.png'),
-    wk: require('../../assets/pieces/Ocean/wk.png'),
+export const themeChessboardImages: Record<
+  string,
+  Record<string, ImageSourcePropType>
+> = {
+  cosmos: {
+    bb: require('../../assets/pieces1/cosmos/bb.png'),
+    bn: require('../../assets/pieces1/cosmos/bn.png'),
+    bq: require('../../assets/pieces1/cosmos/bq.png'),
+    br: require('../../assets/pieces1/cosmos/br.png'),
+    bp: require('../../assets/pieces1/cosmos/bp.png'),
+    bk: require('../../assets/pieces1/cosmos/bk.png'),
+    wb: require('../../assets/pieces1/cosmos/wb.png'),
+    wn: require('../../assets/pieces1/cosmos/wn.png'),
+    wq: require('../../assets/pieces1/cosmos/wq.png'),
+    wr: require('../../assets/pieces1/cosmos/wr.png'),
+    wp: require('../../assets/pieces1/cosmos/wp.png'),
+    wk: require('../../assets/pieces1/cosmos/wk.png'),
   },
-  bubblegum: {
-    bb: require('../../assets/pieces/Bubblegum/bb.png'),
-    bn: require('../../assets/pieces/Bubblegum/bn.png'),
-    bq: require('../../assets/pieces/Bubblegum/bq.png'),
-    br: require('../../assets/pieces/Bubblegum/br.png'),
-    bp: require('../../assets/pieces/Bubblegum/bp.png'),
-    bk: require('../../assets/pieces/Bubblegum/bk.png'),
-    wb: require('../../assets/pieces/Bubblegum/wb.png'),
-    wn: require('../../assets/pieces/Bubblegum/wn.png'),
-    wq: require('../../assets/pieces/Bubblegum/wq.png'),
-    wr: require('../../assets/pieces/Bubblegum/wr.png'),
-    wp: require('../../assets/pieces/Bubblegum/wp.png'),
-    wk: require('../../assets/pieces/Bubblegum/wk.png'),
+  earth: {
+    bb: require('../../assets/pieces1/earth/bb.png'),
+    bn: require('../../assets/pieces1/earth/bn.png'),
+    bq: require('../../assets/pieces1/earth/bq.png'),
+    br: require('../../assets/pieces1/earth/br.png'),
+    bp: require('../../assets/pieces1/earth/bp.png'),
+    bk: require('../../assets/pieces1/earth/bk.png'),
+    wb: require('../../assets/pieces1/earth/wb.png'),
+    wn: require('../../assets/pieces1/earth/wn.png'),
+    wq: require('../../assets/pieces1/earth/wq.png'),
+    wr: require('../../assets/pieces1/earth/wr.png'),
+    wp: require('../../assets/pieces1/earth/wp.png'),
+    wk: require('../../assets/pieces1/earth/wk.png'),
   },
-  clay: {
-    bb: require('../../assets/pieces/Clay/bb.png'),
-    bn: require('../../assets/pieces/Clay/bn.png'),
-    bq: require('../../assets/pieces/Clay/bq.png'),
-    br: require('../../assets/pieces/Clay/br.png'),
-    bp: require('../../assets/pieces/Clay/bp.png'),
-    bk: require('../../assets/pieces/Clay/bk.png'),
-    wb: require('../../assets/pieces/Clay/wb.png'),
-    wn: require('../../assets/pieces/Clay/wn.png'),
-    wq: require('../../assets/pieces/Clay/wq.png'),
-    wr: require('../../assets/pieces/Clay/wr.png'),
-    wp: require('../../assets/pieces/Clay/wp.png'),
-    wk: require('../../assets/pieces/Clay/wk.png'),
+  jupiter: {
+    bb: require('../../assets/pieces1/jupiter/bb.png'),
+    bn: require('../../assets/pieces1/jupiter/bn.png'),
+    bq: require('../../assets/pieces1/jupiter/bq.png'),
+    br: require('../../assets/pieces1/jupiter/br.png'),
+    bp: require('../../assets/pieces1/jupiter/bp.png'),
+    bk: require('../../assets/pieces1/jupiter/bk.png'),
+    wb: require('../../assets/pieces1/jupiter/wb.png'),
+    wn: require('../../assets/pieces1/jupiter/wn.png'),
+    wq: require('../../assets/pieces1/jupiter/wq.png'),
+    wr: require('../../assets/pieces1/jupiter/wr.png'),
+    wp: require('../../assets/pieces1/jupiter/wp.png'),
+    wk: require('../../assets/pieces1/jupiter/wk.png'),
   },
-  neon: {
-    bb: require('../../assets/pieces/Neon/bb.png'),
-    bn: require('../../assets/pieces/Neon/bn.png'),
-    bq: require('../../assets/pieces/Neon/bq.png'),
-    br: require('../../assets/pieces/Neon/br.png'),
-    bp: require('../../assets/pieces/Neon/bp.png'),
-    bk: require('../../assets/pieces/Neon/bk.png'),
-    wb: require('../../assets/pieces/Neon/wb.png'),
-    wn: require('../../assets/pieces/Neon/wn.png'),
-    wq: require('../../assets/pieces/Neon/wq.png'),
-    wr: require('../../assets/pieces/Neon/wr.png'),
-    wp: require('../../assets/pieces/Neon/wp.png'),
-    wk: require('../../assets/pieces/Neon/wk.png'),
+  mars: {
+    bb: require('../../assets/pieces1/mars/bb.png'),
+    bn: require('../../assets/pieces1/mars/bn.png'),
+    bq: require('../../assets/pieces1/mars/bq.png'),
+    br: require('../../assets/pieces1/mars/br.png'),
+    bp: require('../../assets/pieces1/mars/bp.png'),
+    bk: require('../../assets/pieces1/mars/bk.png'),
+    wb: require('../../assets/pieces1/mars/wb.png'),
+    wn: require('../../assets/pieces1/mars/wn.png'),
+    wq: require('../../assets/pieces1/mars/wq.png'),
+    wr: require('../../assets/pieces1/mars/wr.png'),
+    wp: require('../../assets/pieces1/mars/wp.png'),
+    wk: require('../../assets/pieces1/mars/wk.png'),
   },
-  romantic: {
-    bb: require('../../assets/pieces/Romantic/bb.png'),
-    bn: require('../../assets/pieces/Romantic/bn.png'),
-    bq: require('../../assets/pieces/Romantic/bq.png'),
-    br: require('../../assets/pieces/Romantic/br.png'),
-    bp: require('../../assets/pieces/Romantic/bp.png'),
-    bk: require('../../assets/pieces/Romantic/bk.png'),
-    wb: require('../../assets/pieces/Romantic/wb.png'),
-    wn: require('../../assets/pieces/Romantic/wn.png'),
-    wq: require('../../assets/pieces/Romantic/wq.png'),
-    wr: require('../../assets/pieces/Romantic/wr.png'),
-    wp: require('../../assets/pieces/Romantic/wp.png'),
-    wk: require('../../assets/pieces/Romantic/wk.png'),
+  saturn: {
+    bb: require('../../assets/pieces1/saturn/bb.png'),
+    bn: require('../../assets/pieces1/saturn/bn.png'),
+    bq: require('../../assets/pieces1/saturn/bq.png'),
+    br: require('../../assets/pieces1/saturn/br.png'),
+    bp: require('../../assets/pieces1/saturn/bp.png'),
+    bk: require('../../assets/pieces1/saturn/bk.png'),
+    wb: require('../../assets/pieces1/saturn/wb.png'),
+    wn: require('../../assets/pieces1/saturn/wn.png'),
+    wq: require('../../assets/pieces1/saturn/wq.png'),
+    wr: require('../../assets/pieces1/saturn/wr.png'),
+    wp: require('../../assets/pieces1/saturn/wp.png'),
+    wk: require('../../assets/pieces1/saturn/wk.png'),
   },
-  tournament: {
-    bb: require('../../assets/pieces/Tournament/bb.png'),
-    bn: require('../../assets/pieces/Tournament/bn.png'),
-    bq: require('../../assets/pieces/Tournament/bq.png'),
-    br: require('../../assets/pieces/Tournament/br.png'),
-    bp: require('../../assets/pieces/Tournament/bp.png'),
-    bk: require('../../assets/pieces/Tournament/bk.png'),
-    wb: require('../../assets/pieces/Tournament/wb.png'),
-    wn: require('../../assets/pieces/Tournament/wn.png'),
-    wq: require('../../assets/pieces/Tournament/wq.png'),
-    wr: require('../../assets/pieces/Tournament/wr.png'),
-    wp: require('../../assets/pieces/Tournament/wp.png'),
-    wk: require('../../assets/pieces/Tournament/wk.png'),
+  uranus: {
+    bb: require('../../assets/pieces1/uranus/bb.png'),
+    bn: require('../../assets/pieces1/uranus/bn.png'),
+    bq: require('../../assets/pieces1/uranus/bq.png'),
+    br: require('../../assets/pieces1/uranus/br.png'),
+    bp: require('../../assets/pieces1/uranus/bp.png'),
+    bk: require('../../assets/pieces1/uranus/bk.png'),
+    wb: require('../../assets/pieces1/uranus/wb.png'),
+    wn: require('../../assets/pieces1/uranus/wn.png'),
+    wq: require('../../assets/pieces1/uranus/wq.png'),
+    wr: require('../../assets/pieces1/uranus/wr.png'),
+    wp: require('../../assets/pieces1/uranus/wp.png'),
+    wk: require('../../assets/pieces1/uranus/wk.png'),
   },
-  wood: {
-    bb: require('../../assets/pieces/Wood/bb.png'),
-    bn: require('../../assets/pieces/Wood/bn.png'),
-    bq: require('../../assets/pieces/Wood/bq.png'),
-    br: require('../../assets/pieces/Wood/br.png'),
-    bp: require('../../assets/pieces/Wood/bp.png'),
-    bk: require('../../assets/pieces/Wood/bk.png'),
-    wb: require('../../assets/pieces/Wood/wb.png'),
-    wn: require('../../assets/pieces/Wood/wn.png'),
-    wq: require('../../assets/pieces/Wood/wq.png'),
-    wr: require('../../assets/pieces/Wood/wr.png'),
-    wp: require('../../assets/pieces/Wood/wp.png'),
-    wk: require('../../assets/pieces/Wood/wk.png'),
+  venus: {
+    bb: require('../../assets/pieces1/venus/bb.png'),
+    bn: require('../../assets/pieces1/venus/bn.png'),
+    bq: require('../../assets/pieces1/venus/bq.png'),
+    br: require('../../assets/pieces1/venus/br.png'),
+    bp: require('../../assets/pieces1/venus/bp.png'),
+    bk: require('../../assets/pieces1/venus/bk.png'),
+    wb: require('../../assets/pieces1/venus/wb.png'),
+    wn: require('../../assets/pieces1/venus/wn.png'),
+    wq: require('../../assets/pieces1/venus/wq.png'),
+    wr: require('../../assets/pieces1/venus/wr.png'),
+    wp: require('../../assets/pieces1/venus/wp.png'),
+    wk: require('../../assets/pieces1/venus/wk.png'),
   },
-  winter: {
-    bb: require('../../assets/pieces/Winter/bb.png'),
-    bn: require('../../assets/pieces/Winter/bn.png'),
-    bq: require('../../assets/pieces/Winter/bq.png'),
-    br: require('../../assets/pieces/Winter/br.png'),
-    bp: require('../../assets/pieces/Winter/bp.png'),
-    bk: require('../../assets/pieces/Winter/bk.png'),
-    wb: require('../../assets/pieces/Winter/wb.png'),
-    wn: require('../../assets/pieces/Winter/wn.png'),
-    wq: require('../../assets/pieces/Winter/wq.png'),
-    wr: require('../../assets/pieces/Winter/wr.png'),
-    wp: require('../../assets/pieces/Winter/wp.png'),
-    wk: require('../../assets/pieces/Winter/wk.png'),
+  neptune: {
+    bb: require('../../assets/pieces1/neptune/bb.png'),
+    bn: require('../../assets/pieces1/neptune/bn.png'),
+    bq: require('../../assets/pieces1/neptune/bq.png'),
+    br: require('../../assets/pieces1/neptune/br.png'),
+    bp: require('../../assets/pieces1/neptune/bp.png'),
+    bk: require('../../assets/pieces1/neptune/bk.png'),
+    wb: require('../../assets/pieces1/neptune/wb.png'),
+    wn: require('../../assets/pieces1/neptune/wn.png'),
+    wq: require('../../assets/pieces1/neptune/wq.png'),
+    wr: require('../../assets/pieces1/neptune/wr.png'),
+    wp: require('../../assets/pieces1/neptune/wp.png'),
+    wk: require('../../assets/pieces1/neptune/wk.png'),
+  },
+  mercury: {
+    bb: require('../../assets/pieces1/mercury/bb.png'),
+    bn: require('../../assets/pieces1/mercury/bn.png'),
+    bq: require('../../assets/pieces1/mercury/bq.png'),
+    br: require('../../assets/pieces1/mercury/br.png'),
+    bp: require('../../assets/pieces1/mercury/bp.png'),
+    bk: require('../../assets/pieces1/mercury/bk.png'),
+    wb: require('../../assets/pieces1/mercury/wb.png'),
+    wn: require('../../assets/pieces1/mercury/wn.png'),
+    wq: require('../../assets/pieces1/mercury/wq.png'),
+    wr: require('../../assets/pieces1/mercury/wr.png'),
+    wp: require('../../assets/pieces1/mercury/wp.png'),
+    wk: require('../../assets/pieces1/mercury/wk.png'),
   },
 };
-

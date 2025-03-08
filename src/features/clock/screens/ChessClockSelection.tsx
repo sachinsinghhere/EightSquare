@@ -11,7 +11,7 @@ import {
   Dimensions,
   ScrollView,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { useTheme } from '../../../shared/theme/ThemeContext';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import Slider from '@react-native-community/slider';
@@ -76,6 +76,7 @@ const ChessClockSelection = () => {
   const [customTime, setCustomTime] = useState(10);
   const [customIncrement, setCustomIncrement] = useState(0);
   const [timeUnit, setTimeUnit] = useState<TimeUnit>('minutes');
+  const {params} = useRoute();
 
   const getMaxTime = (unit: TimeUnit) => {
     return unit === 'hours' ? 4 : 240;
@@ -86,10 +87,25 @@ const ChessClockSelection = () => {
   };
 
   const handleTimeSelect = (minutes: number, increment: number) => {
+    if(params?.playWithFriend){
+      navigation.navigate('Game', {
+        minutes,
+        increment,
+      });
+      return
+    }
     navigation.navigate('ChessTimer', { minutes, increment });
   };
 
   const handleCustomTimeSelect = () => {
+    console.log('params', params);
+    if(params?.playWithFriend){
+      navigation.navigate('Game', {
+        minutes,
+        increment,
+      });
+      return;
+    }
     const minutes = convertToMinutes(customTime, timeUnit);
     handleTimeSelect(minutes, customIncrement);
   };
@@ -125,14 +141,13 @@ const ChessClockSelection = () => {
       </View>
     </Animated.View>
   );
-
+console.log('params', params);
   return (
-    <ScreenWrapper title="Time Control" showBack={false}>
+    <ScreenWrapper title={params?.playWithFriend ? "Play with Friend" : "Time Control"} showBack={!!(params?.playWithFriend)}>
       <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.content}
-      >
+        contentContainerStyle={styles.content}>
         {timeSections.map((section, index) => renderSection(section, index))}
 
         <Animated.View
@@ -143,15 +158,16 @@ const ChessClockSelection = () => {
               backgroundColor: theme.colors.card,
               borderColor: theme.colors.border,
             },
-          ]}
-        >
+          ]}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionEmoji}>⚙️</Text>
-            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Custom</Text>
+            <Text style={[styles.sectionTitle, {color: theme.colors.text}]}>
+              Custom
+            </Text>
           </View>
 
           <View style={styles.customContent}>
-            <Text style={[styles.customLabel, { color: theme.colors.text }]}>
+            <Text style={[styles.customLabel, {color: theme.colors.text}]}>
               Initial Time: {customTime} {timeUnit}
             </Text>
             <View style={styles.unitSelector}>
@@ -167,8 +183,7 @@ const ChessClockSelection = () => {
                           : theme.colors.surface,
                     },
                   ]}
-                  onPress={() => setTimeUnit(unit)}
-                >
+                  onPress={() => setTimeUnit(unit)}>
                   <Text
                     style={[
                       styles.unitText,
@@ -178,8 +193,7 @@ const ChessClockSelection = () => {
                             ? theme.colors.background
                             : theme.colors.text,
                       },
-                    ]}
-                  >
+                    ]}>
                     {unit === 'minutes' ? 'min' : 'hr'}
                   </Text>
                 </TouchableOpacity>
@@ -191,13 +205,13 @@ const ChessClockSelection = () => {
               minimumValue={1}
               maximumValue={getMaxTime(timeUnit)}
               value={customTime}
-              onValueChange={(value) => setCustomTime(Math.round(value))}
+              onValueChange={value => setCustomTime(Math.round(value))}
               minimumTrackTintColor={theme.colors.primary}
               maximumTrackTintColor={theme.colors.border}
               thumbTintColor={theme.colors.primary}
             />
 
-            <Text style={[styles.customLabel, { color: theme.colors.text }]}>
+            <Text style={[styles.customLabel, {color: theme.colors.text}]}>
               Increment: {customIncrement} seconds
             </Text>
             <Slider
@@ -205,7 +219,7 @@ const ChessClockSelection = () => {
               minimumValue={0}
               maximumValue={60}
               value={customIncrement}
-              onValueChange={(value) => setCustomIncrement(Math.round(value))}
+              onValueChange={value => setCustomIncrement(Math.round(value))}
               minimumTrackTintColor={theme.colors.primary}
               maximumTrackTintColor={theme.colors.border}
               thumbTintColor={theme.colors.primary}
@@ -214,16 +228,14 @@ const ChessClockSelection = () => {
             <TouchableOpacity
               style={[
                 styles.startButton,
-                { backgroundColor: theme.colors.primary },
+                {backgroundColor: theme.colors.primary},
               ]}
-              onPress={handleCustomTimeSelect}
-            >
+              onPress={handleCustomTimeSelect}>
               <Text
                 style={[
                   styles.startButtonText,
-                  { color: theme.colors.background },
-                ]}
-              >
+                  {color: theme.colors.background},
+                ]}>
                 Start Game
               </Text>
             </TouchableOpacity>
