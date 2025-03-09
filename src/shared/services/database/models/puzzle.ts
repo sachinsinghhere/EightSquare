@@ -1,19 +1,20 @@
 import {Model} from '@nozbe/watermelondb';
-import {field, text, date} from '@nozbe/watermelondb/decorators';
+import {field} from '@nozbe/watermelondb/decorators';
 
 export default class Puzzle extends Model {
   static table = 'puzzles';
 
-  @text('puzzle_id') puzzleId!: string;
-  @text('fen') fen!: string;
-  @text('moves') moves!: string;
+  @field('puzzle_id') puzzle_id!: string;
+  @field('fen') fen!: string;
+  @field('moves') moves!: string;
   @field('rating') rating!: number;
-  @field('rating_deviation') ratingDeviation?: number;
+  @field('rating_deviation') rating_deviation?: number;
   @field('popularity') popularity?: number;
-  @field('nb_plays') nbPlays?: number;
-  @text('themes') themes!: string;
-  @text('game_url') gameUrl?: string;
-  @text('opening_tags') openingTags?: string;
+  @field('nb_plays') nb_plays?: number;
+  @field('themes') themes!: string;
+  @field('gameUrl') gameUrl?: string;
+  @field('opening_tags') opening_tags?: string;
+  @field('solved') solved?: boolean;
   // @date('created_at') createdAt!: Date;
   // @date('updated_at') updatedAt!: Date;
 
@@ -23,7 +24,7 @@ export default class Puzzle extends Model {
   }
 
   get openingList(): string[] {
-    return this.openingTags ? this.openingTags.split(' ') : [];
+    return this.opening_tags ? this.opening_tags.split(' ') : [];
   }
 
   // Helper to check if puzzle has specific theme
@@ -34,5 +35,12 @@ export default class Puzzle extends Model {
   // Helper to check if puzzle has specific opening
   hasOpening(opening: string): boolean {
     return this.openingList.includes(opening);
+  }
+
+  // Mark puzzle as solved
+  async markAsSolved() {
+    await this.update(puzzle => {
+      puzzle.solved = true;
+    });
   }
 }

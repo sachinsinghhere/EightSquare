@@ -19,6 +19,7 @@ import FlipCard from 'react-native-flip-card';
 import Icon from '../../../shared/components/Icon';
 import {textStyles} from '../../../shared/theme/typography';
 import { Avatars } from '../../../assets';
+import {useNetworkStatus} from '../../../shared/hooks/useNetworkStatus';
 
 export interface AIPersona {
   id: string;
@@ -27,6 +28,7 @@ export interface AIPersona {
   level: number;
   image: any;
   description: string;
+  depth?: number; // Optional depth parameter for engine-based opponents
   personality: {
     style: string;
     strength: string;
@@ -39,7 +41,7 @@ export interface AIPersona {
     winning: string[];
     losing: string[];
     draw: string[];
-  };
+  } | ((move: any) => string);
   prompts: {
     moveAnalysis: string;
     gameStrategy: string;
@@ -55,7 +57,7 @@ const DIFFICULTY_LEVELS = [
     personas: [
       {
         id: 'casual_carl',
-        name: 'Casual Carl',
+        name: 'Carl',
         rating: 800,
         level: 0,
         image: Avatars.avatar_one,
@@ -65,23 +67,24 @@ const DIFFICULTY_LEVELS = [
           strength: 'Patient teaching',
           weakness: 'Basic mistakes',
         },
-        commentary: {
-          opening: ["Let's have fun!", "I'm learning too!", "Nice move!"],
-          middlegame: ["Hmm, interesting!", "What should I do?", "This is fun!"],
-          endgame: ["Almost there!", "Good game!", "I'm improving!"],
-          winning: ["Lucky me!", "Well played!", "That was close!"],
-          losing: ["Good job!", "I learned something!", "Nice strategy!"],
-          draw: ["Fair game!", "Both played well!", "That was fun!"],
+        commentary: (move: any) => {
+          if (move.san.includes('+')) return 'Oh! A check! Nice move!';
+          if (move.san.includes('x')) return 'Capturing a piece! Exciting!';
+          if (move.san.includes('=')) return 'Promotion! This is exciting!';
+          return "Let's have fun! A relaxed move!";
         },
         prompts: {
-          moveAnalysis: "As a casual player who enjoys learning, analyze this move with basic chess concepts.",
-          gameStrategy: "You're playing for fun and learning. Share your thoughts on the position.",
-          personalityTraits: "You're friendly, casual, and enjoy the social aspect of chess.",
+          moveAnalysis:
+            'As a casual player who enjoys learning, analyze this move with basic chess concepts.',
+          gameStrategy:
+            "You're playing for fun and learning. Share your thoughts on the position.",
+          personalityTraits:
+            "You're friendly, casual, and enjoy the social aspect of chess.",
         },
       },
       {
         id: 'rookie_rachel',
-        name: 'Rookie Rachel',
+        name: 'Rachel',
         rating: 1000,
         level: 0,
         image: Avatars.avatar_two,
@@ -91,23 +94,24 @@ const DIFFICULTY_LEVELS = [
           strength: 'Quick adaptation',
           weakness: 'Tactical oversights',
         },
-        commentary: {
-          opening: ["I know this one!", "Basic principles!", "Development first!"],
-          middlegame: ["Looking for tactics!", "Should I trade?", "Center control!"],
-          endgame: ["Endgame time!", "Kings active!", "Pawns matter!"],
-          winning: ["I did it!", "Practice pays off!", "Getting better!"],
-          losing: ["Good teaching!", "I see my mistake!", "Next time!"],
-          draw: ["Even game!", "Well fought!", "Learning experience!"],
+        commentary: (move: any) => {
+          if (move.san.includes('+')) return 'I found a check! Feeling smart!';
+          if (move.san.includes('x')) return 'Good capture! Material matters!';
+          if (move.san.includes('=')) return 'Promoted! Now I feel strong!';
+          return 'Piece development is key!';
         },
         prompts: {
-          moveAnalysis: "As an eager beginner, analyze this move focusing on basic principles.",
-          gameStrategy: "You're learning and applying basic chess concepts. Share your thoughts.",
-          personalityTraits: "You're enthusiastic, studious, and eager to improve.",
+          moveAnalysis:
+            'As an eager beginner, analyze this move focusing on basic principles.',
+          gameStrategy:
+            "You're learning and applying basic chess concepts. Share your thoughts.",
+          personalityTraits:
+            "You're enthusiastic, studious, and eager to improve.",
         },
       },
       {
         id: 'patient_pat',
-        name: 'Patient Pat',
+        name: 'Nexa',
         rating: 1200,
         level: 0,
         image: Avatars.avatar_three,
@@ -117,18 +121,21 @@ const DIFFICULTY_LEVELS = [
           strength: 'Solid basics',
           weakness: 'Missed opportunities',
         },
-        commentary: {
-          opening: ["Step by step!", "Building slowly!", "Safety first!"],
-          middlegame: ["Careful now!", "Let's think...", "No rush!"],
-          endgame: ["Steady does it!", "One move at a time!", "Stay focused!"],
-          winning: ["Patience paid off!", "Solid play!", "Good foundation!"],
-          losing: ["Learning moment!", "Stay positive!", "Next game!"],
-          draw: ["Fair result!", "Good effort!", "Steady game!"],
+        commentary: (move: any) => {
+          if (move.san.includes('+')) return "Check! Let's proceed carefully.";
+          if (move.san.includes('x'))
+            return 'Captured material, now stay solid.';
+          if (move.san.includes('='))
+            return "Promotion secured! Let's convert it.";
+          return 'Slow and steady wins the game.';
         },
         prompts: {
-          moveAnalysis: "As a patient beginner, analyze this move with careful consideration.",
-          gameStrategy: "You prefer slow, methodical play. Share your positional thoughts.",
-          personalityTraits: "You're patient, methodical, and focused on fundamentals.",
+          moveAnalysis:
+            'As a patient beginner, analyze this move with careful consideration.',
+          gameStrategy:
+            'You prefer slow, methodical play. Share your positional thoughts.',
+          personalityTraits:
+            "You're patient, methodical, and focused on fundamentals.",
         },
       },
     ],
@@ -140,7 +147,7 @@ const DIFFICULTY_LEVELS = [
     personas: [
       {
         id: 'tactical_tim',
-        name: 'Tactical Tim',
+        name: 'Tim',
         rating: 1500,
         level: 2,
         image: Avatars.avatar_four,
@@ -150,23 +157,25 @@ const DIFFICULTY_LEVELS = [
           strength: 'Finding forks',
           weakness: 'Positional play',
         },
-        commentary: {
-          opening: ["Attack ready!", "Sharp line!", "Tactical setup!"],
-          middlegame: ["See the combo?", "Calculate deep!", "Sacrifice time!"],
-          endgame: ["Tactical finish!", "Find the win!", "Precise moves!"],
-          winning: ["Tactics win!", "Combo worked!", "Sharp play!"],
-          losing: ["Well defended!", "Missed tactic!", "Good calculation!"],
-          draw: ["Close fight!", "Tactical draw!", "Complex game!"],
+        commentary: (move: any) => {
+          if (move.san.includes('+')) return 'Tactics in play! Check!';
+          if (move.san.includes('x')) return 'Nice capture! Tactical shot!';
+          if (move.san.includes('=')) return "Promotion! Let's make it count!";
+          if (move.san.includes('O-O')) return 'Castling! Safety first!';
+          return 'Setting up a tactical trick!';
         },
         prompts: {
-          moveAnalysis: "As a tactical player, analyze this move focusing on combinations.",
-          gameStrategy: "You seek tactical opportunities. Share your aggressive plans.",
-          personalityTraits: "You're sharp, calculating, and love combinations.",
+          moveAnalysis:
+            'As a tactical player, analyze this move focusing on combinations.',
+          gameStrategy:
+            'You seek tactical opportunities. Share your aggressive plans.',
+          personalityTraits:
+            "You're sharp, calculating, and love combinations.",
         },
       },
       {
         id: 'positional_petra',
-        name: 'Positional Petra',
+        name: 'Petra',
         rating: 1700,
         level: 2,
         image: Avatars.avatar_five,
@@ -176,23 +185,25 @@ const DIFFICULTY_LEVELS = [
           strength: 'Pawn structure',
           weakness: 'Time pressure',
         },
-        commentary: {
-          opening: ["Control center!", "Good structure!", "Develop naturally!"],
-          middlegame: ["Improve pieces!", "Create weakness!", "Strategic grip!"],
-          endgame: ["Convert advantage!", "Better pawns!", "Technical win!"],
-          winning: ["Position tells!", "Strategy works!", "Controlled game!"],
-          losing: ["Well planned!", "Better structure!", "Strategic loss!"],
-          draw: ["Equal position!", "Balanced play!", "Fair structure!"],
+        commentary: (move: any) => {
+          if (move.san.includes('+'))
+            return 'Check! Gaining positional control!';
+          if (move.san.includes('x')) return 'Capture improves my structure!';
+          if (move.san.includes('=')) return 'Pawn promotion! Endgame time.';
+          return 'Carefully improving my position.';
         },
         prompts: {
-          moveAnalysis: "As a positional player, analyze this move's strategic implications.",
-          gameStrategy: "You focus on long-term advantages. Share your strategic assessment.",
-          personalityTraits: "You're methodical, strategic, and value position over tactics.",
+          moveAnalysis:
+            "As a positional player, analyze this move's strategic implications.",
+          gameStrategy:
+            'You focus on long-term advantages. Share your strategic assessment.',
+          personalityTraits:
+            "You're methodical, strategic, and value position over tactics.",
         },
       },
       {
         id: 'dynamic_diana',
-        name: 'Dynamic Diana',
+        name: 'Diana',
         rating: 1900,
         level: 2,
         image: Avatars.avatar_six,
@@ -202,18 +213,19 @@ const DIFFICULTY_LEVELS = [
           strength: 'Initiative',
           weakness: 'Overextending',
         },
-        commentary: {
-          opening: ["Active pieces!", "Create chaos!", "Dynamic play!"],
-          middlegame: ["Keep pressure!", "Force errors!", "Stay active!"],
-          endgame: ["Push pawns!", "Active king!", "Create chances!"],
-          winning: ["Activity wins!", "Pressure told!", "Dynamic victory!"],
-          losing: ["Well controlled!", "Too risky!", "Good defense!"],
-          draw: ["Wild game!", "Many chances!", "Active play!"],
+        commentary: (move: any) => {
+          if (move.san.includes('+')) return 'Check! Keep up the pressure!';
+          if (move.san.includes('x')) return 'Boom! That piece is gone!';
+          if (move.san.includes('='))
+            return 'Pawn promoted! Now the real fun begins!';
+          return 'Stirring up complications! Chaos is my game!';
         },
         prompts: {
-          moveAnalysis: "As a dynamic player, analyze this move's active potential.",
-          gameStrategy: "You seek active piece play. Share your dynamic plans.",
-          personalityTraits: "You're energetic, creative, and love active positions.",
+          moveAnalysis:
+            "As a dynamic player, analyze this move's active potential.",
+          gameStrategy: 'You seek active piece play. Share your dynamic plans.',
+          personalityTraits:
+            "You're energetic, creative, and love active positions.",
         },
       },
     ],
@@ -225,7 +237,7 @@ const DIFFICULTY_LEVELS = [
     personas: [
       {
         id: 'strategic_steve',
-        name: 'Strategic Steve',
+        name: 'Steve',
         rating: 2100,
         level: 4,
         image: Avatars.avatar_seven,
@@ -235,23 +247,28 @@ const DIFFICULTY_LEVELS = [
           strength: 'Long-term play',
           weakness: 'Time management',
         },
-        commentary: {
-          opening: ["Strategic choice!", "Deep preparation!", "Complex position!"],
-          middlegame: ["Multiple plans!", "Strategic battle!", "Create imbalance!"],
-          endgame: ["Technical phase!", "Convert advantage!", "Precise technique!"],
-          winning: ["Strategy prevails!", "Well executed!", "Clear advantage!"],
-          losing: ["Well played!", "Better strategy!", "Instructive game!"],
-          draw: ["Complex battle!", "Equal chances!", "Strategic draw!"],
+        commentary: (move: any) => {
+          if (move.san.includes('+'))
+            return 'Check! Strategic pressure applied!';
+          if (move.san.includes('x'))
+            return 'Took control with a strong capture!';
+          if (move.san.includes('=')) return 'A well-planned promotion!';
+          if (move.san.includes('O-O'))
+            return 'King safety established, time for strategy!';
+          return 'Positionally sound move, keeping control.';
         },
         prompts: {
-          moveAnalysis: "As a strategic master, analyze this move's deep implications.",
-          gameStrategy: "You understand complex positions. Share your strategic insight.",
-          personalityTraits: "You're analytical, deep-thinking, and strategically minded.",
+          moveAnalysis:
+            "As a strategic master, analyze this move's deep implications.",
+          gameStrategy:
+            'You understand complex positions. Share your strategic insight.',
+          personalityTraits:
+            "You're analytical, deep-thinking, and strategically minded.",
         },
       },
       {
         id: 'attacking_alex',
-        name: 'Attacking Alex',
+        name: 'Zyra',
         rating: 2300,
         level: 4,
         image: Avatars.avatar_eight,
@@ -261,23 +278,25 @@ const DIFFICULTY_LEVELS = [
           strength: 'Initiative',
           weakness: 'Defense',
         },
-        commentary: {
-          opening: ["Sharp variation!", "Attack ready!", "Sacrifice coming!"],
-          middlegame: ["Attack builds!", "Calculate deep!", "Press advantage!"],
-          endgame: ["Convert attack!", "Keep pressure!", "Find knockout!"],
-          winning: ["Attack wins!", "Well calculated!", "Perfect execution!"],
-          losing: ["Good defense!", "Counter play!", "Well held!"],
-          draw: ["Fighting draw!", "Many chances!", "Sharp game!"],
+        commentary: (move: any) => {
+          if (move.san.includes('+')) return 'Check! Attack is heating up!';
+          if (move.san.includes('x')) return 'Sacrifices bring victory!';
+          if (move.san.includes('='))
+            return 'Promotion secures my attacking chances!';
+          return 'Time to push for an attack!';
         },
         prompts: {
-          moveAnalysis: "As an attacking player, analyze this move's aggressive potential.",
-          gameStrategy: "You seek attacking chances. Share your tactical assessment.",
-          personalityTraits: "You're aggressive, calculating, and love attacks.",
+          moveAnalysis:
+            "As an attacking player, analyze this move's aggressive potential.",
+          gameStrategy:
+            'You seek attacking chances. Share your tactical assessment.',
+          personalityTraits:
+            "You're aggressive, calculating, and love attacks.",
         },
       },
       {
         id: 'universal_uma',
-        name: 'Universal Uma',
+        name: 'Uma',
         rating: 2500,
         level: 4,
         image: Avatars.avatar_nine,
@@ -287,42 +306,120 @@ const DIFFICULTY_LEVELS = [
           strength: 'Adaptability',
           weakness: 'Perfectionism',
         },
-        commentary: {
-          opening: ["Interesting choice!", "Many plans!", "Complex game!"],
-          middlegame: ["Critical position!", "Calculate carefully!", "Key moment!"],
-          endgame: ["Technical phase!", "Precise play!", "Convert advantage!"],
-          winning: ["Well played!", "Clear plan!", "Good technique!"],
-          losing: ["Excellent play!", "Instructive game!", "Well done!"],
-          draw: ["Fair result!", "Good fight!", "Complex game!"],
+        commentary: (move: any) => {
+          if (move.san.includes('+')) return 'Check! Attack is heating up!';
+          if (move.san.includes('x')) return 'Sacrifices bring victory!';
+          if (move.san.includes('='))
+            return 'Promotion secures my attacking chances!';
+          return 'Time to push for an attack!';
         },
         prompts: {
-          moveAnalysis: "As a universal player, provide a complete analysis of this move.",
-          gameStrategy: "You understand all aspects of chess. Share your comprehensive view.",
-          personalityTraits: "You're well-rounded, adaptable, and deeply knowledgeable.",
+          moveAnalysis:
+            'As a universal player, provide a complete analysis of this move.',
+          gameStrategy:
+            'You understand all aspects of chess. Share your comprehensive view.',
+          personalityTraits:
+            "You're well-rounded, adaptable, and deeply knowledgeable.",
         },
       },
     ],
   },
+  // {
+  //   name: 'Engines',
+  //   description: 'Play against powerful chess engines (Requires Internet)',
+  //   color: '#9C27B0',
+  //   requiresInternet: true,
+  //   personas: [
+  //     {
+  //       id: 'stockfish_rapid',
+  //       name: 'Stockfish Rapid',
+  //       rating: 2800,
+  //       level: 12,
+  //       depth: 12,
+  //       image: Avatars.engine_one, // Using existing avatar for now
+  //       description: 'Fast and strong chess engine for rapid games',
+  //       personality: {
+  //         style: 'Universal calculation',
+  //         strength: 'Perfect tactics',
+  //         weakness: 'None',
+  //       },
+  //       commentary: (move: any) => {
+  //         if (move.san?.includes('+')) return 'Check! The position is forcing.';
+  //         if (move.san?.includes('x')) return 'Material balance shifts.';
+  //         if (move.san?.includes('=')) return 'Promotion is decisive.';
+  //         if (move.san?.includes('O-O')) return 'Position secured.';
+  //         return 'Position evaluated.';
+  //       },
+  //       prompts: {
+  //         moveAnalysis: 'Analyze this position with perfect tactical accuracy.',
+  //         gameStrategy: 'Calculate the optimal continuation in this position.',
+  //         personalityTraits:
+  //           'You are precise, calculating, and tactically perfect.',
+  //       },
+  //     },
+  //     {
+  //       id: 'stockfish_deep',
+  //       name: 'Stockfish Deep',
+  //       rating: 3000,
+  //       level: 20,
+  //       depth: 20,
+  //       image: Avatars.engine_two, // Using existing avatar for now
+  //       description: 'Deep calculating chess engine for serious analysis',
+  //       personality: {
+  //         style: 'Deep calculation',
+  //         strength: 'Strategic mastery',
+  //         weakness: 'None',
+  //       },
+  //       commentary: (move: any) => {
+  //         if (move.san?.includes('+')) return 'Check. Position is winning.';
+  //         if (move.san?.includes('x')) return 'Exchange is necessary.';
+  //         if (move.san?.includes('=')) return 'Promotion is inevitable.';
+  //         if (move.san?.includes('O-O')) return 'King position optimized.';
+  //         return 'Move follows optimal strategy.';
+  //       },
+  //       prompts: {
+  //         moveAnalysis: 'Provide deep strategic analysis of this position.',
+  //         gameStrategy: 'Calculate the deepest strategic implications.',
+  //         personalityTraits:
+  //           'You are deeply analytical and strategically perfect.',
+  //       },
+  //     },
+  //   ],
+  // },
 ];
 
 type PlayScreenNavigationProp = NativeStackNavigationProp<PlayStackParamList, 'AIPersona'>;
 
-type DifficultyLevel = 'Beginner' | 'Intermediate' | 'Advanced';
+type DifficultyLevel = 'Beginner' | 'Intermediate' | 'Advanced' | 'Engines';
 
 const DifficultyIcon: Record<DifficultyLevel, string> = {
   Beginner: 'star-shooting',
   Intermediate: 'fire',
   Advanced: 'crown',
+  Engines: 'chip',
 };
 
 export const AIPersonaScreen = () => {
   const {theme} = useTheme();
   const navigation = useNavigation<PlayScreenNavigationProp>();
   const {width} = useWindowDimensions();
-  const cardWidth = width * 0.42; // Reduced to 30% of screen width
+  const {isOnline} = useNetworkStatus();
+  const cardWidth = width * 0.42;
 
   const handlePersonaSelect = useCallback((persona: AIPersona) => {
-    navigation.navigate('Play', {selectedPersona: persona});
+    navigation.navigate('Play', {
+      selectedPersona: {
+        ...persona,
+        commentary: typeof persona.commentary === 'function' ? {
+          opening: [],
+          middlegame: [],
+          endgame: [],
+          winning: [],
+          losing: [],
+          draw: [],
+        } : persona.commentary
+      }
+    });
   }, [navigation]);
 
   const renderPersonaCard = useCallback((persona: AIPersona) => {
@@ -476,11 +573,13 @@ export const AIPersonaScreen = () => {
     return null;
   }, [renderPersonaCard, cardWidth]);
 
-  const sections = DIFFICULTY_LEVELS.map(level => ({
-    name: level.name,
-    description: level.description,
-    data: level.personas,
-  }));
+  const sections = DIFFICULTY_LEVELS
+    .filter(level => !level.requiresInternet || isOnline)
+    .map(level => ({
+      name: level.name,
+      description: level.description,
+      data: level.personas,
+    }));
 
   return (
     <ScreenWrapper title="Play with AI" showBack>

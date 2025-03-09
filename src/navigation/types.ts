@@ -3,7 +3,13 @@ import { NavigatorScreenParams } from '@react-navigation/native';
 export type TrainStackParamList = {
   TrainingModules: undefined;
   PuzzleCategories: undefined;
-  PuzzleSolver: { filter: { type: string } };
+  PuzzleSolver: {
+    filter: {
+      type: string;
+      tag?: string;
+      includeSolved?: boolean;
+    };
+  };
   VisionTraining: undefined;
   BlindChess: undefined;
   ChessTitles: undefined;

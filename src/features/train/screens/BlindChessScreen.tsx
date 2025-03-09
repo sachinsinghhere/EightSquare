@@ -51,15 +51,21 @@ const BlindChessScreen = () => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [loading, setLoading] = useState(false);
   const [gameStatus, setGameStatus] = useState<string>('');
+  const [lastEngineMove, setLastEngineMove] = useState<string>('');
   const [legalMoves, setLegalMoves] = useState<Move[]>([]);
   const [currentFen, setCurrentFen] = useState('');
+  const [playerColor] = useState<'w' | 'b'>(Math.random() < 0.5 ? 'w' : 'b');
   const chessboardRef = useRef<ChessboardRef>(null);
   const chessRef = useRef(new Chess());
   const engineRef = useRef(new JSChessEngine.Game());
 
   useEffect(() => {
     updateLegalMoves();
-  }, []);
+    // If player is black, make engine's first move
+    if (playerColor === 'b') {
+      makeEngineMove();
+    }
+  }, [playerColor]);
 
   const updateLegalMoves = () => {
     const moves = chessRef.current.moves({verbose: true});
@@ -69,20 +75,20 @@ const BlindChessScreen = () => {
     // Update game status
     const chess = chessRef.current;
     if (chess.game_over()) {
-      if (chess.in_checkmate) {
+      if (chess.in_checkmate()) {
         setGameStatus('Checkmate!');
         playChessSound('game_end');
-      } else if (chess.in_draw) {
+      } else if (chess.in_draw()) {
         setGameStatus('Draw!');
         playChessSound('game_end');
-      } else if (chess.in_stalemate) {
+      } else if (chess.in_stalemate()) {
         setGameStatus('Stalemate!');
         playChessSound('game_end');
       } else {
         setGameStatus('Game Over!');
         playChessSound('game_end');
       }
-    } else if (chess.in_check) {
+    } else if (chess.in_check()) {
       setGameStatus('Check!');
       playChessSound('check');
     } else {
@@ -99,10 +105,12 @@ const BlindChessScreen = () => {
 
     try {
       // Make player's move
-      chessRef.current.move({
+      const playerMove = chessRef.current.move({
         from,
         to,
       });
+
+      if (!playerMove) return;
 
       // Play sound
       playMoveSound(from, to);
@@ -133,14 +141,18 @@ const BlindChessScreen = () => {
       const from = fromSquare.toLowerCase() as Square;
       const to = toSquare.toLowerCase() as Square;
 
-      chessRef.current.move({
+      const engineMove = chessRef.current.move({
         from,
         to,
         promotion: 'q', // Default to queen promotion
       });
 
-      await chessboardRef.current?.move({from, to});
-      return true;
+      if (engineMove) {
+        setLastEngineMove(engineMove.san);
+        await chessboardRef.current?.move({from, to});
+        return true;
+      }
+      return false;
     } catch (error) {
       console.error('Engine move error:', error);
       return false;
@@ -155,6 +167,7 @@ const BlindChessScreen = () => {
       engineRef.current = new JSChessEngine.Game();
       updateLegalMoves();
       setGameStatus('');
+      setLastEngineMove('');
     } catch (error) {
       console.error('Reset error:', error);
     } finally {
@@ -207,13 +220,12 @@ const BlindChessScreen = () => {
       style={[styles.container]}>
       <View style={styles.header}>
         <Text style={[textStyles.h3, {color: theme.colors.text}]}>
-          Imagine the board
+          Imagine the board {playerColor === 'w' ? '(White)' : '(Black)'}
         </Text>
-        {/* {gameStatus ? (
-          <Text style={[textStyles.h4, {color: theme.colors.primary}]}>
-            {gameStatus}
-          </Text>
-        ) : null} */}
+        <Text style={[textStyles.h4, {color: theme.colors.primary}]}>
+          {gameStatus ? gameStatus + ' ' : ''}
+          {lastEngineMove ? `Engine played: ${lastEngineMove}` : 'Your turn'}
+        </Text>
       </View>
 
       <FlipCard

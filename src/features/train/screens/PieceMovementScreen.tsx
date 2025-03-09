@@ -6,13 +6,14 @@ import {
   Switch,
   ScrollView,
 } from 'react-native';
-import React, {useState, useRef, useCallback, useMemo} from 'react';
+import React, {useState, useRef, useCallback, useMemo, useEffect} from 'react';
 import {useTheme} from '../../../shared/theme/ThemeContext';
 import {ChessboardRef} from 'react-native-chessboard';
 import {Chess, PieceType, Square} from 'chess.js';
 import ESChessboard from '../../../shared/components/ESChessboard';
 import {ScreenWrapper} from '../../../shared/components/ScreenWrapper';
 import { textStyles } from '../../../shared/theme/typography';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const {width} = Dimensions.get('window');
 const BOARD_SIZE = width * 0.85;
@@ -38,6 +39,7 @@ const PieceMovementScreen = () => {
   const {theme} = useTheme();
   const [currentChallenge, setCurrentChallenge] = useState<string>('');
   const [score, setScore] = useState(0);
+  const [highScore, setHighScore] = useState(0);
   const [showMotivation, setShowMotivation] = useState<string>('');
   const [showLetters, setShowLetters] = useState(false);
   const [showNumbers, setShowNumbers] = useState(false);
@@ -47,6 +49,36 @@ const PieceMovementScreen = () => {
     from: string;
     to: string;
   } | null>(null);
+
+  // Load high score on component mount
+  useEffect(() => {
+    const loadHighScore = async () => {
+      try {
+        const storedHighScore = await AsyncStorage.getItem('pieceMovementHighScore');
+        if (storedHighScore) {
+          setHighScore(parseInt(storedHighScore, 10));
+        }
+      } catch (error) {
+        console.error('Error loading high score:', error);
+      }
+    };
+    loadHighScore();
+  }, []);
+
+  // Update high score when score changes
+  useEffect(() => {
+    const updateHighScore = async () => {
+      if (score > highScore) {
+        try {
+          await AsyncStorage.setItem('pieceMovementHighScore', score.toString());
+          setHighScore(score);
+        } catch (error) {
+          console.error('Error saving high score:', error);
+        }
+      }
+    };
+    updateHighScore();
+  }, [score, highScore]);
 
   const SQUARES = useMemo(
     () =>
@@ -185,28 +217,53 @@ const PieceMovementScreen = () => {
     (info: ChessMoveInfo) => {
       if (!targetMove) return;
 
-      const isCorrectMove =
-        info.move.from === targetMove.from && info.move.to === targetMove.to;
+      try {
+        // Get all legal moves for the piece at the 'from' square
+        const legalMoves = chessRef.current.moves({ 
+          verbose: true,
+          square: info.move.from as Square
+        });
 
-      // Update score
-      setScore(prev => {
-        const newScore = prev + (isCorrectMove ? 1 : -1);
+        // Check if the move is legal and matches our target
+        const isLegalMove = legalMoves.some(m => m.from === info.move.from && m.to === info.move.to);
+        const isTargetMove = info.move.from === targetMove.from && info.move.to === targetMove.to;
 
-        // Show motivation on multiples of 7 (only for positive scores)
-        if (newScore > 0 && newScore % 7 === 0) {
-          const message =
-            MOTIVATIONAL_MESSAGES[
-              Math.floor(Math.random() * MOTIVATIONAL_MESSAGES.length)
-            ];
-          setShowMotivation(message);
-          setTimeout(() => setShowMotivation(''), 3000);
+        if (!isLegalMove) {
+          // If move is not legal, reset the board to previous position
+          chessboardRef.current?.resetBoard(chessRef.current.fen());
+          return;
         }
 
-        return newScore;
-      });
+        // Make the move in the chess instance
+        chessRef.current.move({
+          from: info.move.from as Square,
+          to: info.move.to as Square
+        });
 
-      // Generate new challenge regardless of move correctness
-      generateNewChallenge();
+        // Update score based on if it was the target move
+        setScore(prev => {
+          const newScore = prev + (isTargetMove ? 1 : -1);
+
+          // Show motivation on multiples of 7 (only for positive scores)
+          if (newScore > 0 && newScore % 7 === 0) {
+            const message =
+              MOTIVATIONAL_MESSAGES[
+                Math.floor(Math.random() * MOTIVATIONAL_MESSAGES.length)
+              ];
+            setShowMotivation(message);
+            setTimeout(() => setShowMotivation(''), 3000);
+          }
+
+          return newScore;
+        });
+
+        // Generate new challenge regardless of move correctness
+        generateNewChallenge();
+      } catch (error) {
+        console.error('Invalid move:', error);
+        // Reset board to previous position if move was invalid
+        chessboardRef.current?.resetBoard(chessRef.current.fen());
+      }
     },
     [targetMove, generateNewChallenge],
   );
@@ -233,6 +290,13 @@ const PieceMovementScreen = () => {
               {color: score < 0 ? theme.colors.error : theme.colors.text},
             ]}>
             Score: {score}
+          </Text>
+          <Text
+            style={[
+              styles.highScore,
+              {color: theme.colors.text},
+            ]}>
+            High Score: {highScore}
           </Text>
           <Text style={[styles.challenge, {color: theme.colors.text}]}>
             {currentChallenge}
@@ -321,6 +385,12 @@ const styles = StyleSheet.create({
     fontSize: 20,
     textAlign: 'center',
     fontFamily: 'CormorantGaramond-Bold',
+  },
+  highScore: {
+    fontSize: 20,
+    textAlign: 'center',
+    fontFamily: 'CormorantGaramond-Bold',
+    marginTop: 5,
   },
   challenge: {
     fontSize: 18,

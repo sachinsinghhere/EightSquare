@@ -5,15 +5,13 @@ import {
   Text,
   TouchableOpacity,
   Dimensions,
-  Share,
   Alert,
   ScrollView,
 } from 'react-native';
-import {useRoute, RouteProp} from '@react-navigation/native';
+import {useRoute, RouteProp, useNavigation} from '@react-navigation/native';
 import {Chess, Square} from 'chess.js';
 import {ChessboardRef} from 'react-native-chessboard';
-import {captureRef} from 'react-native-view-shot';
-import Icon from '../../../shared/components/Icon';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useTheme} from '../../../shared/theme/ThemeContext';
 import {textStyles} from '../../../shared/theme/typography';
 import {TrainStackParamList} from '../../../navigation/types';
@@ -22,7 +20,7 @@ import {database} from '../../../shared/services/database';
 import Puzzle from '../../../shared/services/database/models/puzzle';
 import {playMoveSound, playChessSound} from '../../../utils/sounds';
 import ESChessboard from '../../../shared/components/ESChessboard';
-import { ScreenWrapper } from '../../../shared/components/ScreenWrapper';
+import {ScreenWrapper} from '../../../shared/components/ScreenWrapper';
 
 const {width} = Dimensions.get('window');
 const BOARD_SIZE = width * 0.85;
@@ -39,16 +37,18 @@ interface PuzzleRaw {
   popularity: number | null;
   nb_plays: number | null;
   themes: string;
-  game_url: string | null;
+  gameUrl: string | null;
   opening_tags: string;
 }
 
 const PuzzleSolverScreen = () => {
   const route = useRoute<RouteProp<TrainStackParamList, 'PuzzleSolver'>>();
+  const navigation = useNavigation();
   const {theme} = useTheme();
   const chessboardRef = useRef<ChessboardRef>(null);
   const boardRef = useRef<View>(null);
   const chessRef = useRef(new Chess());
+  const solutionScrollViewRef = useRef<ScrollView>(null);
 
   const [moveIndex, setMoveIndex] = useState(0);
   const [currentPuzzle, setCurrentPuzzle] = useState<Puzzle | null>(null);
@@ -57,11 +57,12 @@ const PuzzleSolverScreen = () => {
   const [loading, setLoading] = useState(true);
   const [isCorrectMove, setIsCorrectMove] = useState<boolean | null>(null);
   const [score, setScore] = useState(0);
-  const [isFavorite, setIsFavorite] = useState(false);
+  const [highScore, setHighScore] = useState(0);
   const [showSolution, setShowSolution] = useState(false);
   const [isOpponentMoving, setIsOpponentMoving] = useState(false);
   const [playerColor, setPlayerColor] = useState<'w' | 'b'>('w');
   const [isPlayerTurn, setIsPlayerTurn] = useState(true);
+  const [boardKey, setBoardKey] = useState(0);
 
   const {filter} = route.params;
 
@@ -72,9 +73,17 @@ const PuzzleSolverScreen = () => {
         const query =
           filter.type === 'random'
             ? database.get('puzzles').query()
+            : filter.type === 'theme'
+            ? database
+                .get('puzzles')
+                .query(Q.where('themes', Q.like(`%${filter.tag}%`)))
             : database
                 .get('puzzles')
-                .query(Q.where('themes', Q.like(`%${filter.type}%`)));
+                .query(Q.where('opening_tags', Q.like(`%${filter.tag}%`)));
+
+        if (!filter.includeSolved) {
+          query.extend(Q.where('solved', Q.notEq(true)));
+        }
 
         const puzzleCollection = await query.fetch();
         console.log('puzzleCollection', puzzleCollection);
@@ -85,6 +94,17 @@ const PuzzleSolverScreen = () => {
         setPuzzles(randomPuzzles);
         if (randomPuzzles.length > 0) {
           setCurrentPuzzle(randomPuzzles[0]);
+        } else {
+          Alert.alert(
+            'No Puzzles Available',
+            'No unsolved puzzles found in this category. Try another category or include solved puzzles.',
+            [
+              {
+                text: 'Go Back',
+                onPress: () => navigation.goBack(),
+              },
+            ],
+          );
         }
       } catch (error) {
         console.error('Error loading puzzles:', error);
@@ -102,7 +122,7 @@ const PuzzleSolverScreen = () => {
       const raw = currentPuzzle._raw as PuzzleRaw;
       const chess = new Chess(raw.fen);
       chessRef.current = chess;
-      
+
       // Get the first move (opponent's move)
       const moves = raw.moves.split(' ');
       const firstMove = moves[0];
@@ -116,7 +136,7 @@ const PuzzleSolverScreen = () => {
       setMoveIndex(1); // Start from index 1 since first move is auto-played
       setIsCorrectMove(null);
       setIsPlayerTurn(false);
-      
+
       // Play the first move automatically
       setIsOpponentMoving(true);
       setTimeout(() => {
@@ -128,15 +148,69 @@ const PuzzleSolverScreen = () => {
     }
   }, [currentPuzzle]);
 
+  useEffect(() => {
+    const loadHighScore = async () => {
+      try {
+        const savedHighScore = await AsyncStorage.getItem('puzzleHighScore');
+        if (savedHighScore !== null) {
+          setHighScore(parseInt(savedHighScore, 10));
+        }
+      } catch (error) {
+        console.error('Error loading high score:', error);
+      }
+    };
+    loadHighScore();
+  }, []);
+
+  const updateHighScore = async (newScore: number) => {
+    if (newScore > highScore) {
+      setHighScore(newScore);
+      try {
+        await AsyncStorage.setItem('puzzleHighScore', newScore.toString());
+      } catch (error) {
+        console.error('Error saving high score:', error);
+      }
+    }
+  };
+
   const moveToNextPuzzle = () => {
     if (currentPuzzleIndex < puzzles.length - 1) {
-      chessboardRef.current?.resetBoard();
+      const nextPuzzle = puzzles[currentPuzzleIndex + 1];
+      const raw = nextPuzzle._raw as PuzzleRaw;
+      
+      // Reset the chess instance with the new FEN
+      chessRef.current = new Chess(raw.fen);
+      
+      // Update states
       setCurrentPuzzleIndex(prev => prev + 1);
-      setCurrentPuzzle(puzzles[currentPuzzleIndex + 1]);
+      setCurrentPuzzle(nextPuzzle);
+      setMoveIndex(0);
+      setIsCorrectMove(null);
+      setIsPlayerTurn(false);
+      setIsOpponentMoving(false);
+      setShowSolution(false);
+      setBoardKey(prev => prev + 1); // Force board re-render
+      
+      // Make the first opponent move after a short delay
+      setTimeout(() => {
+        const moves = raw.moves.split(' ');
+        const firstMove = moves[0];
+        const [fromOpp, toOpp] = [
+          firstMove.slice(0, 2) as Square,
+          firstMove.slice(2, 4) as Square,
+        ];
+        
+        setIsOpponentMoving(true);
+        chessboardRef.current?.move({from: fromOpp, to: toOpp});
+        chessRef.current.move({from: fromOpp, to: toOpp});
+        setIsOpponentMoving(false);
+        setIsPlayerTurn(true);
+        setMoveIndex(1);
+      }, 500);
     } else {
       Alert.alert(
         'Congratulations!',
-        `You've completed all puzzles in this set!\nTotal Score: ${score}`,
+        `You've completed all puzzles in this set!\nFinal Score: ${score}\nHigh Score: ${highScore}`,
         [
           {
             text: 'Start Over',
@@ -165,19 +239,23 @@ const PuzzleSolverScreen = () => {
       const fromSquare = from as Square;
       const toSquare = to as Square;
       chessRef.current.move({from: fromSquare, to: toSquare});
-      
+
       // Play appropriate sound based on move type
       const isCapture = chessRef.current.get(toSquare) !== null;
       const isCheck = chessRef.current.in_check();
       playMoveSound(from, to, isCapture, isCheck, false);
-      
+
       setIsCorrectMove(true);
       setIsPlayerTurn(false);
 
       if (moveIndex === moves.length - 1) {
         // Puzzle completed
-        setScore(s => s + 1);
-        playChessSound('gameEnd');
+        if (!showSolution) {
+          const newScore = score + 1;
+          setScore(newScore);
+          updateHighScore(newScore);
+        }
+        playChessSound('game_end');
         setTimeout(() => {
           Alert.alert('Success!', 'Puzzle solved correctly!', [
             {text: 'Next Puzzle', onPress: moveToNextPuzzle},
@@ -194,12 +272,12 @@ const PuzzleSolverScreen = () => {
         setTimeout(() => {
           chessboardRef.current?.move({from: fromOpp, to: toOpp});
           chessRef.current.move({from: fromOpp, to: toOpp});
-          
+
           // Play sound for opponent's move
           const isCapture = chessRef.current.get(toOpp) !== null;
           const isCheck = chessRef.current.in_check();
           playMoveSound(fromOpp, toOpp, isCapture, isCheck, false);
-          
+
           setIsOpponentMoving(false);
           setIsPlayerTurn(true);
           setMoveIndex(moveIndex + 2);
@@ -208,7 +286,7 @@ const PuzzleSolverScreen = () => {
     } else {
       // Wrong move
       setIsCorrectMove(false);
-      playChessSound('move');  // Play a normal move sound for wrong moves
+      playChessSound('move'); // Play a normal move sound for wrong moves
       setTimeout(() => {
         chessboardRef.current?.undo();
         setIsCorrectMove(null);
@@ -216,40 +294,24 @@ const PuzzleSolverScreen = () => {
     }
   };
 
-  const handleShare = async () => {
-    try {
-      if (boardRef.current && currentPuzzle) {
-        const uri = await captureRef(boardRef.current, {
-          format: 'png',
-          quality: 1,
-        });
-        const raw = currentPuzzle._raw as PuzzleRaw;
-        await Share.share({
-          url: uri,
-          message: `Can you solve this chess puzzle? Rating: ${raw.rating}`,
-        });
-      }
-    } catch (error) {
-      console.error('Error sharing puzzle:', error);
+  // Add this effect to scroll to bottom when solution is shown
+  useEffect(() => {
+    if (showSolution && solutionScrollViewRef.current) {
+      setTimeout(() => {
+        solutionScrollViewRef.current?.scrollToEnd({animated: true});
+      }, 100);
     }
-  };
-
-  const toggleFavorite = () => {
-    setIsFavorite(!isFavorite);
-  };
+  }, [showSolution]);
 
   if (loading || !currentPuzzle) {
     return (
-      <View
-        style={[styles.container]}>
-        <Text style={[textStyles.h4, {color: theme.colors.text}]}>
-          Loading puzzles...
-        </Text>
-      </View>
+      <ScreenWrapper title="Solve Puzzles" loaderVisible={loading}>
+        <Text style={[textStyles.h4, {color: theme.colors.text}]}>{''}</Text>
+      </ScreenWrapper>
     );
   }
 
-  const raw = currentPuzzle._raw as PuzzleRaw;
+  const raw = currentPuzzle?._raw as PuzzleRaw;
   console.log('RAW', raw);
 
   const solutionMoves = raw.moves.split(' ').map((move, index) => {
@@ -263,32 +325,34 @@ const PuzzleSolverScreen = () => {
   });
 
   return (
-  <ScreenWrapper title="Solve Puzzles">
-
-    <ScrollView
-      contentContainerStyle={[styles.container]}>
-      <Text
-        style={[
-          textStyles.h5,
-          {color: theme.colors.text, marginBottom: 8, textAlign: 'center'},
-        ]}>
-        {isOpponentMoving
-          ? 'Opponent is moving...'
-          : isPlayerTurn
-          ? 'Your turn'
-          : "Opponent's turn"}
-      </Text>
-      <Text
-        style={[
-          textStyles.bodySmall,
-          {color: theme.colors.text, marginBottom: 8, textAlign: 'center'},
-        ]}>
-        You are playing as {playerColor === 'w' ? 'White' : 'Black'}
-      </Text>
+    <ScreenWrapper title="Solve Puzzles">
+      <ScrollView
+        contentContainerStyle={[styles.container]}
+        showsVerticalScrollIndicator={false}>
+        <View style={styles.scoreContainer}>
+          <Text style={[textStyles.h5, {color: theme.colors.text}]}>
+            Score: {score}
+          </Text>
+          <Text style={[textStyles.h5, {color: theme.colors.text}]}>
+            High Score: {highScore}
+          </Text>
+        </View>
+        <Text
+          style={[
+            textStyles.h5,
+            {color: theme.colors.text, marginBottom: 8, textAlign: 'center'},
+          ]}>
+          {isOpponentMoving
+            ? 'Opponent is moving...'
+            : isPlayerTurn
+            ? 'Your turn'
+            : "Opponent's turn"}
+        </Text>
         <ESChessboard
+          key={boardKey}
           boardRef={chessboardRef}
           fen={raw.fen}
-          onMove={showSolution ? undefined : handleMove}
+          onMove={handleMove}
           colors={{
             black: theme.colors.primary,
             white: theme.colors.secondary,
@@ -302,84 +366,77 @@ const PuzzleSolverScreen = () => {
             promotionPieceButton: theme.colors.success,
           }}
           boardSize={BOARD_SIZE}
-          gestureEnabled={!showSolution}
+          gestureEnabled={true}
         />
-      <View style={styles.controls}>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-around',
-            alignItems: 'center',
-            width: '100%',
-          }}>
-          <TouchableOpacity
-            style={[styles.button, {backgroundColor: theme.colors.primary}]}
-            onPress={toggleFavorite}>
-            <Icon
-              name={isFavorite ? 'heart' : 'heart-outline'}
-              size={24}
-              color={theme.colors.card}
-            />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.button, {backgroundColor: theme.colors.primary}]}
-            onPress={() => setShowSolution(!showSolution)}>
-            <Text style={[textStyles.button, {color: theme.colors.card}]}>
-              {showSolution ? 'Hide Solution' : 'View Solution'}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.button, {backgroundColor: theme.colors.primary}]}
-            onPress={handleShare}>
-            <Icon name="share-variant" size={24} color={theme.colors.card} />
-          </TouchableOpacity>
+        <View style={styles.controls}>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
+              width: '100%',
+              marginTop: 16,
+            }}>
+            <TouchableOpacity
+              style={[styles.button, {backgroundColor: theme.colors.primary}]}
+              onPress={() => setShowSolution(!showSolution)}>
+              <Text style={[textStyles.button, {color: theme.colors.card}]}>
+                {showSolution ? 'Hide Solution' : 'View Solution'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+          {showSolution && (
+            <View
+              style={[
+                styles.solutionBox,
+                {backgroundColor: theme.colors.card},
+              ]}>
+              <Text
+                style={[
+                  textStyles.h5,
+                  {color: theme.colors.text, marginBottom: 8},
+                ]}>
+                Solution
+              </Text>
+              <ScrollView
+                ref={solutionScrollViewRef}
+                style={styles.solutionScroll}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.solutionScrollContent}>
+                {solutionMoves.map((move, index) => (
+                  <View key={index} style={styles.moveRow}>
+                    {move.isPlayer ? (
+                      <Text
+                        style={[
+                          textStyles.bodySmall,
+                          {color: theme.colors.success, fontWeight: '600'},
+                        ]}>
+                        {move.number}. Your move: {move.move}
+                      </Text>
+                    ) : (
+                      <Text
+                        style={[
+                          textStyles.bodySmall,
+                          {color: theme.colors.text, opacity: 0.8},
+                        ]}>
+                        {move.number}. Opponent: {move.move}
+                      </Text>
+                    )}
+                  </View>
+                ))}
+              </ScrollView>
+            </View>
+          )}
         </View>
-        {showSolution && <View
-          style={[styles.solutionBox, {backgroundColor: theme.colors.card}]}>
-          <Text
-            style={[
-              textStyles.h5,
-              {color: theme.colors.text, marginBottom: 8},
-            ]}>
-            Solution
-          </Text>
-          <ScrollView style={styles.solutionScroll}>
-            {solutionMoves.map((move, index) => (
-              <View key={index} style={styles.moveRow}>
-                {move.isPlayer ? (
-                  <Text
-                    style={[
-                      textStyles.bodySmall,
-                      {color: theme.colors.primary},
-                    ]}>
-                    {move.number}. Your move: {move.move}
-                  </Text>
-                ) : (
-                  <Text
-                    style={[
-                      textStyles.bodySmall,
-                      {color: theme.colors.text, opacity: 0.8},
-                    ]}>
-                    {move.number}. Opponent: {move.move}
-                  </Text>
-                )}
-              </View>
-            ))}
-          </ScrollView>
-        </View>}
-      </View>
-    </ScrollView>
+      </ScrollView>
     </ScreenWrapper>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    // flex: 1,
     alignItems: 'center',
-    paddingBottom: 100,
   },
   boardContainer: {
     width: BOARD_SIZE,
@@ -404,13 +461,23 @@ const styles = StyleSheet.create({
     margin: 16,
     padding: 15,
     borderRadius: 12,
-    maxHeight: 220,
+    maxHeight: 400,
   },
   solutionScroll: {
-    maxHeight: 150,
+    maxHeight: 350,
+  },
+  solutionScrollContent: {
+    paddingBottom: 16,
   },
   moveRow: {
     marginBottom: 8,
+  },
+  scoreContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    paddingHorizontal: 20,
+    marginVertical: 16,
   },
 });
 

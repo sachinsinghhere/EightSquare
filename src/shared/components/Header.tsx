@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { useTheme } from '../theme/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { textStyles } from '../theme/typography';
 
 interface HeaderProps {
   title: string;
@@ -52,6 +53,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
+    marginTop: Platform.OS === 'android' ? 0 : 45,
     // borderBottomWidth: 1,
     // borderBottomColor: 'rgba(0,0,0,0.1)',
   },
@@ -70,9 +72,7 @@ const styles = StyleSheet.create({
   },
   title: {
     flex: 1,
-    fontSize: 20,
     textAlign: 'center',
-    fontFamily: 'CormorantGaramond-Regular',
-    fontWeight: '800'
+    ...textStyles.getSecondaryStyle(textStyles.h3),
   },
 }); 

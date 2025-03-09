@@ -1,6 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, StatusBar } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, StyleSheet, StatusBar, Platform } from 'react-native';
 import { useTheme } from '../theme/ThemeContext';
 import { Header } from './Header';
 import Loader from './Loader';
@@ -29,13 +28,11 @@ export const ScreenWrapper: React.FC<ScreenWrapperProps> = ({
   const { theme } = useTheme();
 
   return (
-    <SafeAreaView
-      style={[styles.container, {backgroundColor: theme.colors.background}]}
-      edges={['top', 'left', 'right']}
-      >
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <StatusBar
-        barStyle={theme.name === 'Dark' ? 'light-content' : 'dark-content'}
-        backgroundColor={theme.colors.background}
+        translucent
+        backgroundColor="transparent"
+        barStyle="light-content"
       />
       
       <GalaxyBackground />
@@ -44,20 +41,22 @@ export const ScreenWrapper: React.FC<ScreenWrapperProps> = ({
         <Header title={title} showBack={showBack} rightAction={rightAction} />
       )}
 
-      <View
-        style={[styles.content, {backgroundColor: 'transparent'}]}>
+      <View style={[styles.content]}>
         {children}
       </View>
       <Loader visible={loaderVisible} />
-    </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+    paddingBottom: Platform.OS === 'android' ? 0 : undefined,
   },
   content: {
     flex: 1,
+    justifyContent: 'space-between',
   },
 }); 

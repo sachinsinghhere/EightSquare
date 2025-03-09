@@ -6,10 +6,11 @@ import {
   TouchableOpacity,
   Alert,
   useWindowDimensions,
+  BackHandler,
 } from 'react-native';
 import {useTheme} from '../../../shared/theme/ThemeContext';
 import {ScreenWrapper} from '../../../shared/components/ScreenWrapper';
-import {useRoute} from '@react-navigation/native';
+import {useRoute, useNavigation} from '@react-navigation/native';
 import {Game} from 'js-chess-engine';
 import type {Move} from 'chess.js';
 import ESChessboard from '../../../shared/components/ESChessboard';
@@ -116,6 +117,7 @@ const PlayerClock = ({
 
 const GameScreen = () => {
   const route = useRoute();
+  const navigation = useNavigation();
   const {minutes, increment} = route.params as RouteParams;
   const {theme} = useTheme();
   const {width} = useWindowDimensions();
@@ -278,6 +280,74 @@ const GameScreen = () => {
     );
   }, [currentPlayer, handleGameOver]);
 
+  // Handle back button and gesture
+  useEffect(() => {
+    const handleBack = () => {
+      if (isGameOver) {
+        navigation.goBack();
+        return true;
+      }
+
+      Alert.alert(
+        'Leave Game?',
+        'You need to resign to leave the game. Would you like to resign?',
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
+          },
+          {
+            text: 'Resign',
+            style: 'destructive',
+            onPress: () => {
+              handleGameOver(currentPlayer === 'white' ? 'black' : 'white');
+              navigation.goBack();
+            },
+          },
+        ],
+      );
+      return true;
+    };
+
+    // Add back handler
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', handleBack);
+    
+    // Add navigation listener for gesture/header back
+    const unsubscribe = navigation.addListener('beforeRemove', (e) => {
+      if (isGameOver) {
+        return;
+      }
+
+      // Prevent default behavior
+      e.preventDefault();
+
+      // Show resign confirmation
+      Alert.alert(
+        'Leave Game?',
+        'You need to resign to leave the game. Would you like to resign?',
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
+          },
+          {
+            text: 'Resign',
+            style: 'destructive',
+            onPress: () => {
+              handleGameOver(currentPlayer === 'white' ? 'black' : 'white');
+              navigation.dispatch(e.data.action);
+            },
+          },
+        ],
+      );
+    });
+
+    return () => {
+      backHandler.remove();
+      unsubscribe();
+    };
+  }, [navigation, isGameOver, handleGameOver, currentPlayer]);
+
   return (
     <ScreenWrapper title="Chess Game" showBack>
       <View style={styles.container}>
@@ -333,11 +403,13 @@ const GameScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    // flex: 1,
     padding: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   clockContainer: {
-    marginVertical: 4,
+    marginVertical: 16,
     borderRadius: 8,
     borderWidth: 1,
     elevation: 1,
@@ -345,6 +417,7 @@ const styles = StyleSheet.create({
     shadowOffset: {width: 0, height: 1},
     shadowOpacity: 0.1,
     shadowRadius: 2,
+    width: '100%',
   },
   clockInnerContainer: {
     flexDirection: 'row',

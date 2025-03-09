@@ -16,7 +16,7 @@ export default schemaMigrations({
             {name: 'popularity', type: 'number', isOptional: true},
             {name: 'nb_plays', type: 'number', isOptional: true},
             {name: 'themes', type: 'string', isIndexed: true},
-            {name: 'game_url', type: 'string', isOptional: true},
+            {name: 'gameUrl', type: 'string', isOptional: true},
             {name: 'opening_tags', type: 'string', isOptional: true, isIndexed: true},
             // {name: 'created_at', type: 'number'},
             // {name: 'updated_at', type: 'number'},

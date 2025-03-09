@@ -1,27 +1,19 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, Switch } from 'react-native';
 import { ScreenWrapper } from '../../../shared/components/ScreenWrapper';
 import { useTheme } from '../../../shared/theme/ThemeContext';
-import Slider from '@react-native-community/slider';
+import { useSoundSettings } from '../../../shared/context/SoundContext';
 
 const SoundSettingsScreen = () => {
   const { theme } = useTheme();
-  const [moveSound, setMoveSound] = useState(true);
-  const [notificationSound, setNotificationSound] = useState(true);
-  const [volume, setVolume] = useState(0.8);
+  const { isSoundEnabled, setIsSoundEnabled } = useSoundSettings();
 
   const settings = [
     {
       title: 'Piece Movement Sound',
       description: 'Play sound when moving pieces',
-      value: moveSound,
-      onValueChange: setMoveSound,
-    },
-    {
-      title: 'Notification Sound',
-      description: 'Play sound for notifications',
-      value: notificationSound,
-      onValueChange: setNotificationSound,
+      value: isSoundEnabled,
+      onValueChange: setIsSoundEnabled,
     },
   ];
 
@@ -48,26 +40,6 @@ const SoundSettingsScreen = () => {
             />
           </View>
         ))}
-
-        {/* <View style={[styles.volumeContainer, { backgroundColor: theme.colors.card }]}>
-          <Text style={[styles.volumeTitle, { color: theme.colors.text, fontFamily: 'CormorantGaramond-Medium' }]}>
-            Volume
-          </Text>
-          <Slider
-            style={styles.slider}
-            value={volume}
-            onValueChange={setVolume}
-            minimumValue={0}
-            maximumValue={1}
-            step={0.1}
-            minimumTrackTintColor={theme.colors.primary}
-            maximumTrackTintColor={theme.colors.border}
-            thumbTintColor={theme.colors.primary}
-          />
-          <Text style={[styles.volumeValue, { color: theme.colors.text, fontFamily: 'Roboto-Regular' }]}>
-            {Math.round(volume * 100)}%
-          </Text>
-        </View> */}
       </View>
     </ScreenWrapper>
   );

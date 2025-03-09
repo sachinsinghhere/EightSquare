@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Switch, TouchableOpacity, Platform, ScrollView, ActivityIndicator, KeyboardAvoidingView } from 'react-native';
+import { View, Text, StyleSheet, Switch, TouchableOpacity, Platform, ScrollView, ActivityIndicator, KeyboardAvoidingView, Alert } from 'react-native';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { ScreenWrapper } from '../../../shared/components/ScreenWrapper';
 import { useTheme } from '../../../shared/theme/ThemeContext';
@@ -20,22 +20,56 @@ const NotificationsScreen = () => {
   const [originalPreferences, setOriginalPreferences] = useState<NotificationPreferences | null>(null);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    loadPreferences();
+    const initializePreferences = async () => {
+      await loadPreferences();
+    };
+    initializePreferences();
   }, []);
 
   const loadPreferences = async () => {
     try {
       setIsLoading(true);
       const notificationService = NotificationService.getInstance();
-      await notificationService.requestPermissions();
+      
+      // Handle permissions first
+      try {
+        await notificationService.requestPermissions();
+      } catch (error) {
+        Alert.alert(
+          'Notification Permission',
+          'Please enable notifications in your device settings to use this feature.',
+          [{ text: 'OK' }]
+        );
+        // Set default preferences if permissions are denied
+        setPreferences(preferences);
+        setOriginalPreferences(preferences);
+        setIsLoading(false);
+        return;
+      }
+
+      // Load preferences only if we have permissions
       const savedPreferences = await notificationService.getPreferences();
-      setPreferences(savedPreferences);
-      setOriginalPreferences(savedPreferences);
+      if (savedPreferences) {
+        setPreferences(savedPreferences);
+        setOriginalPreferences(savedPreferences);
+      } else {
+        // If no saved preferences, use the defaults
+        setPreferences(preferences);
+        setOriginalPreferences(preferences);
+      }
     } catch (error) {
       console.error('Error loading preferences:', error);
+      Alert.alert(
+        'Error',
+        'Failed to load notification preferences. Please try again.',
+        [{ text: 'OK' }]
+      );
+      // Set default preferences on error
+      setPreferences(preferences);
+      setOriginalPreferences(preferences);
     } finally {
       setIsLoading(false);
     }

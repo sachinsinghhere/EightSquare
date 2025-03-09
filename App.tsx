@@ -6,15 +6,18 @@ import React from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { ThemeProvider } from './src/shared/theme/ThemeContext';
 import { NetworkProvider } from './src/shared/context/NetworkContext';
+import { SoundProvider } from './src/shared/context/SoundContext';
 import AppNavigator from './src/navigation/AppNavigator';
 
 function App(): React.JSX.Element {
   return (
     <ThemeProvider>
       <NetworkProvider>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <AppNavigator />
-        </GestureHandlerRootView>
+        <SoundProvider>
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <AppNavigator />
+          </GestureHandlerRootView>
+        </SoundProvider>
       </NetworkProvider>
     </ThemeProvider>
   );

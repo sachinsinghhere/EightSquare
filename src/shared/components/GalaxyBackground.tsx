@@ -29,16 +29,21 @@ export const GalaxyBackground: React.FC = memo(() => {
   return (
     <Svg style={StyleSheet.absoluteFill}>
       <Defs>
-        <RadialGradient id="galaxyGradient" cx="50%" cy="50%" r="50%">
+        <RadialGradient id="galaxyGradient" cx="50%" cy="50%" r="70%">
           <Stop
             offset="0%"
             stopColor={theme.colors.background}
             stopOpacity="1"
           />
           <Stop
+            offset="50%"
+            stopColor={theme.colors.primary}
+            stopOpacity="0.15"
+          />
+          <Stop
             offset="100%"
             stopColor={theme.colors.primary}
-            stopOpacity="0.1"
+            stopOpacity="0.05"
           />
         </RadialGradient>
       </Defs>

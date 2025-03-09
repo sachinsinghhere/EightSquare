@@ -1,8 +1,9 @@
-import { StyleSheet, Text, View, Dimensions, TouchableOpacity, Switch, Animated } from 'react-native'
-import React, { useState, useCallback, useMemo, useRef } from 'react'
+import { StyleSheet, Text, View, Dimensions, TouchableOpacity, Switch, Animated, ScrollView } from 'react-native'
+import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import { ScreenWrapper } from '../../../shared/components/ScreenWrapper'
 import { useTheme } from '../../../shared/theme/ThemeContext'
 import { fonts, textStyles } from '../../../shared/theme/typography'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const { width } = Dimensions.get('window')
 const BOARD_SIZE = width * 0.85
@@ -33,11 +34,42 @@ const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
 const SquareRecognitionScreen = () => {
   const { theme } = useTheme()
   const [score, setScore] = useState(0)
+  const [highScore, setHighScore] = useState(0)
   const [targetSquare, setTargetSquare] = useState('')
   const [showMotivation, setShowMotivation] = useState('')
   const [showLetters, setShowLetters] = useState(false)
   const [showNumbers, setShowNumbers] = useState(false)
   const motivationOpacity = useRef(new Animated.Value(0)).current
+
+  // Load high score on component mount
+  useEffect(() => {
+    const loadHighScore = async () => {
+      try {
+        const storedHighScore = await AsyncStorage.getItem('squareRecognitionHighScore')
+        if (storedHighScore) {
+          setHighScore(parseInt(storedHighScore, 10))
+        }
+      } catch (error) {
+        console.error('Error loading high score:', error)
+      }
+    }
+    loadHighScore()
+  }, [])
+
+  // Update high score when score changes
+  useEffect(() => {
+    const updateHighScore = async () => {
+      if (score > highScore) {
+        try {
+          await AsyncStorage.setItem('squareRecognitionHighScore', score.toString())
+          setHighScore(score)
+        } catch (error) {
+          console.error('Error saving high score:', error)
+        }
+      }
+    }
+    updateHighScore()
+  }, [score, highScore])
 
   const generateNewTarget = useCallback(() => {
     const newTarget = SQUARES[Math.floor(Math.random() * SQUARES.length)]
@@ -128,11 +160,15 @@ const SquareRecognitionScreen = () => {
   }, [theme.colors, handleSquarePress, showLetters, showNumbers])
 
   return (
-    <ScreenWrapper title="Square Recognition">
+    <ScreenWrapper title="Square Recognition" >
+      <ScrollView showsVerticalScrollIndicator={false}>
       <View style={[styles.container]}>
         <View style={[styles.header, { backgroundColor: theme.colors.background, shadowColor: theme.colors.primary }]}>
           <Text style={[styles.score, { color: score < 0 ? theme.colors.error : theme.colors.text }]}>
             Score: {score}
+          </Text>
+          <Text style={[styles.highScore, { color: theme.colors.text }]}>
+            High Score: {highScore}
           </Text>
           <Text style={[styles.challenge, { color: theme.colors.text }]}>
             Tap square {targetSquare}
@@ -174,10 +210,11 @@ const SquareRecognitionScreen = () => {
           </View>
         </View>
 
-        <View style={[styles.board, { backgroundColor: theme.colors.background }]}>
+        <View style={[styles.board, { backgroundColor: theme.colors.primary }]}>
           {renderBoard}
         </View>
       </View>
+      </ScrollView>
     </ScreenWrapper>
   )
 }
@@ -205,6 +242,12 @@ const styles = StyleSheet.create({
     ...textStyles.h4,
     fontFamily: fonts.secondary.bold,
     textAlign: 'center',
+  },
+  highScore: {
+    ...textStyles.h4,
+    fontFamily: fonts.secondary.bold,
+    textAlign: 'center',
+    marginTop: 5,
   },
   challenge: {
     ...textStyles.bodyLarge,

@@ -1,6 +1,12 @@
 import SoundPlayer from 'react-native-sound-player';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
+let isSoundEnabled = true;
+
+export const setSoundEnabled = (enabled: boolean) => {
+  isSoundEnabled = enabled;
+};
+
 export const Sounds = {
   move_piece: require('../assets/sound/move_piece.mp3'),
   capture: require('../assets/sound/capture.mp3'),
@@ -18,6 +24,8 @@ export const playChessSound = async (
   soundType: 'move_piece' | 'capture' | 'check' | 'castle' | 'game_end',
   withHaptic: boolean = true,
 ) => {
+  if (!isSoundEnabled) return;
+  
   try {
     // Play haptic feedback
     if (withHaptic) {
@@ -73,6 +81,9 @@ export const playMoveSound = (
   move: ChessMove,
   state: ChessState,
 ) => {
+
+  console.log('move --> ', move);
+  console.log('state --> ', state);
   // Determine the move type based on state and move flags
   const getMoveType = () => {
     if (state.game_over || state.in_checkmate || state.in_draw || state.in_stalemate) {

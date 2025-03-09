@@ -4,7 +4,6 @@ import {useTheme} from '../../../shared/theme/ThemeContext';
 import {useNavigation} from '@react-navigation/native';
 import {textStyles} from '../../../shared/theme/typography';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import CustomHeader from '../../../shared/components/CustomHeader';
 import Animated, {FadeInDown} from 'react-native-reanimated';
 import { ScreenWrapper } from '../../../shared/components/ScreenWrapper';
 
@@ -14,7 +13,6 @@ export type TrainingStackParamList = {
   Puzzles: {filter: {type: string}};
   VisionTraining: undefined;
   BlindChess: undefined;
-  ChessTitles: undefined;
 };
 
 type TrainingNavigationProp = NativeStackNavigationProp<TrainingStackParamList>;
@@ -37,12 +35,6 @@ const trainingModules = [
     description: 'Practice playing chess without seeing the pieces',
     emoji: '🎯',
     screen: 'BlindChess' as const,
-  },
-  {
-    title: 'Chess Titles',
-    description: 'Learn about chess titles and their requirements',
-    emoji: '👑',
-    screen: 'ChessTitles' as const,
   },
 ] as const;
 

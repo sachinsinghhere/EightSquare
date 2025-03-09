@@ -1,106 +1,119 @@
-import React, {useEffect, useCallback, useRef} from 'react';
-import {View, FlatList, StyleSheet, useWindowDimensions, Image, ScrollView, Text} from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import {brandThemes, Theme, themeChessboardImages} from '../../../shared/theme/theme';
+import React, {useCallback, useMemo} from 'react';
+import {
+  View,
+  FlatList,
+  StyleSheet,
+  useWindowDimensions,
+  Text,
+  ListRenderItem,
+  ViewStyle,
+  TextStyle,
+} from 'react-native';
+import {
+  brandThemes,
+  Theme,
+  themeChessboardImages,
+} from '../../../shared/theme/theme';
 import {useTheme} from '../../../shared/theme/ThemeContext';
 import ThemeItem from '../components/Theme';
-import { ScreenWrapper } from '../../../shared/components/ScreenWrapper';
+import {ScreenWrapper} from '../../../shared/components/ScreenWrapper';
 import Chessboard from 'react-native-chessboard';
-import FastImage from 'react-native-fast-image';
+import FastImage, {Source} from 'react-native-fast-image';
+
 interface ThemeSelectionScreenProps {
   navigation: {
     goBack: () => void;
   };
 }
 
-
+interface Styles {
+  container: ViewStyle;
+  listContent: ViewStyle;
+  themeCard: ViewStyle;
+  board: ViewStyle;
+  themeItemContainer: ViewStyle;
+  themeName: TextStyle;
+  headerText: TextStyle;
+  activeTheme: TextStyle;
+}
 
 const ThemeSelectionScreen: React.FC<ThemeSelectionScreenProps> = ({
-  navigation,
+  navigation: _navigation,
 }) => {
-  const themes = Object.values(brandThemes.default);
+  const themes = useMemo(() => Object.values(brandThemes.default), []);
   const {theme, setTheme} = useTheme();
-   const scrollViewRef = useRef<ScrollView>(null);
 
-  useEffect(() => {
-    const loadTheme = async () => {
-      try {
-        const storedTheme = await AsyncStorage.getItem('selectedTheme');
-        if (storedTheme) {
-          const parsedTheme = JSON.parse(storedTheme);
-          setTheme(parsedTheme);
-        }
-      } catch (error) {
-        console.error('Error loading theme:', error);
-      }
-    };
-    loadTheme();
-  }, [setTheme]);
-
-  const handleSelectTheme = useCallback(async (selectedTheme: Theme) => {
-    try {
-      await AsyncStorage.setItem('selectedTheme', JSON.stringify(selectedTheme));
+  const handleSelectTheme = useCallback(
+    (selectedTheme: Theme) => {
       setTheme(selectedTheme);
-      scrollViewRef.current?.scrollTo({ x: 0, y: 0, animated: true });
-      // navigation.goBack();
-    } catch (error) {
-      console.error('Error saving theme:', error);
-    }
-  }, [setTheme]);
+    },
+    [setTheme],
+  );
 
-  const renderThemeItem = useCallback(({item, index}: {item: Theme; index: number}) => (
-    <ThemeItem
-      item={item}
-      index={index}
-      currentTheme={theme.name}
-      onSelect={handleSelectTheme}
-    />
-  ), [theme.name]);
+  const renderThemeItem: ListRenderItem<Theme> = useCallback(
+    ({item, index}) => (
+      <ThemeItem
+        item={item}
+        index={index}
+        currentTheme={theme.name}
+        onSelect={handleSelectTheme}
+      />
+    ),
+    [theme.name, handleSelectTheme],
+  );
 
-  const {width, height} = useWindowDimensions();
-  const BOARD_SIZE = width * 0.60;
+  const {width} = useWindowDimensions();
+  const BOARD_SIZE = width * 0.6;
 
+  const ListHeaderComponent = useCallback(() => (
+    <>
+      <Text style={[styles.headerText, {color: theme.colors.text}]}>
+        Board preview
+      </Text>
+      <View pointerEvents="none" style={[styles.board, {height: BOARD_SIZE}]}>
+        <Chessboard
+          colors={{
+            black: theme.colors.primary,
+            white: theme.colors.secondary,
+          }}
+          renderPiece={piece => (
+            <FastImage
+              style={{
+                width: BOARD_SIZE / 8,
+                height: BOARD_SIZE / 8,
+              }}
+              source={
+                themeChessboardImages?.[theme.name.toLowerCase()]?.[piece] as Source
+              }
+            />
+          )}
+          boardSize={BOARD_SIZE}
+        />
+      </View>
+      <Text style={[styles.headerText, styles.activeTheme, {color: theme.colors.text}]}>
+        {`Active : ${theme.name}`}
+      </Text>
+    </>
+  ), [BOARD_SIZE, theme.colors.primary, theme.colors.secondary, theme.colors.text, theme.name]);
 
   return (
     <ScreenWrapper title="Theme">
-      <ScrollView ref={scrollViewRef} showsVerticalScrollIndicator={false}>
-        <View pointerEvents="none" style={[styles.board, {height: BOARD_SIZE}]}>
-          <Chessboard
-            colors={{
-              black: theme.colors.primary,
-              white: theme.colors.secondary,
-            }}
-            renderPiece={piece => (
-              <FastImage
-                style={{
-                  width: BOARD_SIZE / 8,
-                  height: BOARD_SIZE / 8,
-                }}
-                source={themeChessboardImages?.[theme.name.toLowerCase()]?.[piece]}
-              />
-            )}
-            boardSize={BOARD_SIZE}
-          />
-        </View>
-
-        <View
-          style={[
-            styles.container
-          ]}>
-          <FlatList
-            scrollEnabled={false}
-            data={themes}
-            showsVerticalScrollIndicator={false}
-            renderItem={renderThemeItem}
-            contentContainerStyle={styles.listContent}
-          />
-        </View>
-      </ScrollView>
+      <FlatList
+        data={themes}
+        renderItem={renderThemeItem}
+        contentContainerStyle={styles.listContent}
+        ListHeaderComponent={ListHeaderComponent}
+        showsVerticalScrollIndicator={false}
+        removeClippedSubviews={true}
+        windowSize={5}
+        maxToRenderPerBatch={5}
+        initialNumToRender={4}
+      />
     </ScreenWrapper>
   );
 };
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create<Styles>({
   container: {
     flex: 1,
   },
@@ -119,7 +132,7 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
   },
   board: {
-    alignSelf:'center',
+    alignSelf: 'center',
     borderRadius: 8,
     overflow: 'hidden',
     marginVertical: 16,
@@ -141,6 +154,15 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0, 0, 0, 0.75)',
     textShadowOffset: {width: -1, height: 1},
     textShadowRadius: 10,
+  },
+  headerText: {
+    fontSize: 24,
+    fontFamily: 'CormorantGaramond-Bold',
+    textAlign: 'center',
+    marginTop: 20,
+  },
+  activeTheme: {
+    marginVertical: 16,
   },
 });
 

@@ -7,6 +7,7 @@ import {
   useWindowDimensions,
   Image,
   Animated,
+  ScrollView,
 } from 'react-native';
 import {useTheme} from '../../../shared/theme/ThemeContext';
 import {ScreenWrapper} from '../../../shared/components/ScreenWrapper';
@@ -82,8 +83,8 @@ const PlayOptionsScreen = () => {
 
   return (
     <ScreenWrapper title="Play Chess" showHeader={false}>
-      <View
-        style={[styles.container]}>
+      <ScrollView
+        contentContainerStyle={[styles.container]}>
         <View style={styles.logoContainer}>
           <Animated.View
             style={[{transform: [{scale: animationValues.logoScale}]}]}>
@@ -169,7 +170,7 @@ const PlayOptionsScreen = () => {
             </Text>
           </TouchableOpacity>
         </Animated.View>
-      </View>
+      </ScrollView>
     </ScreenWrapper>
   );
 };
@@ -177,13 +178,15 @@ const PlayOptionsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'space-around',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
     padding: 24,
+    marginTop: 50,
   },
   logoContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    flex: 1,
+    paddingTop: 40,
     gap: 16,
   },
   logo: {
@@ -200,6 +203,7 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: 16,
     gap: 20,
+    marginTop: 48,
   },
   option: {
     padding: 24,
